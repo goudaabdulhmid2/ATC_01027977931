@@ -1,0 +1,108 @@
+const dummyEvents = [
+  {
+    title: 'Summer Music Festival 2024',
+    description:
+      "Join us for the biggest music festival of the year! Featuring top artists from around the world, food vendors, and amazing atmosphere. Don't miss out on this unforgettable experience.",
+    date: '2024-06-15T18:00:00.000Z',
+    location: 'Central Park, New York',
+    price: 150.0,
+    category: 'Music',
+    tags: ['festival', 'live music', 'summer'],
+    capacity: 5000,
+    availableTickets: 3500,
+    isActive: true,
+  },
+  {
+    title: 'Tech Conference 2024',
+    description:
+      'Annual technology conference featuring the latest innovations in AI, blockchain, and cloud computing. Network with industry leaders and attend workshops.',
+    date: '2024-07-20T09:00:00.000Z',
+    location: 'Convention Center, San Francisco',
+    price: 299.99,
+    category: 'Technology',
+    tags: ['conference', 'AI', 'networking'],
+    capacity: 1000,
+    availableTickets: 750,
+    isActive: true,
+  },
+  {
+    title: 'Food & Wine Festival',
+    description:
+      'Experience the finest cuisines and wines from around the world. Cooking demonstrations, wine tastings, and celebrity chef appearances.',
+    date: '2024-08-05T12:00:00.000Z',
+    location: 'Downtown Plaza, Chicago',
+    price: 85.0,
+    category: 'Food',
+    tags: ['food', 'wine', 'tasting'],
+    capacity: 2000,
+    availableTickets: 1500,
+    isActive: true,
+  },
+  {
+    title: 'Marathon 2024',
+    description:
+      'Annual city marathon with different categories for all skill levels. Join thousands of runners in this exciting event.',
+    date: '2024-09-10T07:00:00.000Z',
+    location: 'City Center, Boston',
+    price: 75.0,
+    category: 'Sports',
+    tags: ['running', 'marathon', 'fitness'],
+    capacity: 10000,
+    availableTickets: 8000,
+    isActive: true,
+  },
+  {
+    title: 'Art Exhibition: Modern Masters',
+    description:
+      'Exhibition featuring works from contemporary artists. Includes guided tours, artist talks, and interactive installations.',
+    date: '2024-07-01T10:00:00.000Z',
+    location: 'Modern Art Museum, Los Angeles',
+    price: 25.0,
+    category: 'Arts',
+    tags: ['art', 'exhibition', 'modern art'],
+    capacity: 500,
+    availableTickets: 300,
+    isActive: true,
+  },
+  {
+    title: 'Business Networking Summit',
+    description:
+      'Connect with industry leaders and entrepreneurs. Panel discussions, workshops, and networking opportunities.',
+    date: '2024-08-15T08:00:00.000Z',
+    location: 'Business Center, Miami',
+    price: 199.99,
+    category: 'Business',
+    tags: ['networking', 'business', 'entrepreneurship'],
+    capacity: 800,
+    availableTickets: 600,
+    isActive: true,
+  },
+  {
+    title: 'Winter Sports Championship',
+    description:
+      'Annual winter sports competition featuring skiing, snowboarding, and ice skating events.',
+    date: '2024-12-20T09:00:00.000Z',
+    location: 'Mountain Resort, Denver',
+    price: 120.0,
+    category: 'Sports',
+    tags: ['winter sports', 'competition', 'skiing'],
+    capacity: 3000,
+    availableTickets: 2500,
+    isActive: true,
+  },
+  {
+    title: 'Jazz Night',
+    description:
+      'An evening of smooth jazz featuring renowned musicians. Includes dinner and drinks.',
+    date: '2024-07-25T19:00:00.000Z',
+    location: 'Blue Note Jazz Club, New York',
+    price: 65.0,
+    category: 'Music',
+    tags: ['jazz', 'live music', 'dinner'],
+    capacity: 200,
+    availableTickets: 150,
+    isActive: true,
+  },
+];
+
+module.exports = dummyEvents;
