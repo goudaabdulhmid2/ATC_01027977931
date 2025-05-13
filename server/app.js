@@ -17,9 +17,9 @@ const mountRoutes = require('./routes');
 
 const app = express();
 
-// Enaple other domains to access API
+// Enable other domains to access API
 const corsOptions = {
-  origin: 'http://192.168.56.1:3001',
+  origin: ['http://localhost:5173', 'http://192.168.56.1:3001'],
   methods: 'GET,POST,PUT,DELETE',
   credentials: true,
 };

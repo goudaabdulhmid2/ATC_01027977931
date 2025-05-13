@@ -84,12 +84,12 @@ exports.resetPasswordValidator = [
     .isLength({ min: 8 })
     .withMessage('New password must be at least 8 characters')
     .custom((val, { req }) => {
-      if (val !== req.body.confirmPassword) {
+      if (val !== req.body.passwordConfirm) {
         throw new Error('Passwords do not match');
       }
       return true;
     }),
-  check('confirmPassword')
+  check('passwordConfirm')
     .notEmpty()
     .withMessage('Confirm password is required'),
   validatorController.catchError,
