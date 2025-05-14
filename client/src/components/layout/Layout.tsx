@@ -17,6 +17,8 @@ import {
   useMediaQuery,
   Avatar,
   CircularProgress,
+  Button,
+  Stack,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -35,6 +37,7 @@ import { logout, getCurrentUser } from "../../store/slices/authSlice";
 import { RootState } from "../../store";
 import NotificationBell from "../notifications/NotificationBell";
 import { useTheme as useMuiTheme } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 const drawerWidth = 240;
 
@@ -65,6 +68,7 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
   const { user, loading } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
   const [hasCheckedUser, setHasCheckedUser] = useState(false);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     if (!user && !hasCheckedUser) {
@@ -72,6 +76,11 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
       dispatch(getCurrentUser());
     }
   }, [dispatch, user, hasCheckedUser]);
+
+  // RTL support for Arabic
+  useEffect(() => {
+    document.body.dir = i18n.language === "ar" ? "rtl" : "ltr";
+  }, [i18n.language]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -90,18 +99,26 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
   };
 
   const menuItems: MenuItem[] = [
-    { text: "Home", icon: <HomeIcon />, path: "/" },
-    { text: "Events", icon: <EventIcon />, path: "/events" },
-    { text: "My Bookings", icon: <BookOnlineIcon />, path: "/my-bookings" },
-    { text: "Profile", icon: <PersonIcon />, path: "/profile" },
+    { text: t("common.home"), icon: <HomeIcon />, path: "/" },
+    { text: t("common.events"), icon: <EventIcon />, path: "/events" },
+    {
+      text: t("common.bookings"),
+      icon: <BookOnlineIcon />,
+      path: "/my-bookings",
+    },
+    { text: t("common.profile"), icon: <PersonIcon />, path: "/profile" },
   ];
 
   const adminMenuItems: MenuItem[] = [
-    { text: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
-    { text: "Events", icon: <EventIcon />, path: "/admin/events" },
-    { text: "Bookings", icon: <BookOnlineIcon />, path: "/admin/bookings" },
-    { text: "Users", icon: <PeopleIcon />, path: "/admin/users" },
-    { text: "Profile", icon: <PersonIcon />, path: "/profile" },
+    { text: t("admin.dashboard"), icon: <DashboardIcon />, path: "/admin" },
+    { text: t("admin.events"), icon: <EventIcon />, path: "/admin/events" },
+    {
+      text: t("admin.bookings"),
+      icon: <BookOnlineIcon />,
+      path: "/admin/bookings",
+    },
+    { text: t("admin.users"), icon: <PeopleIcon />, path: "/admin/users" },
+    { text: t("common.profile"), icon: <PersonIcon />, path: "/profile" },
   ];
 
   const drawer = (
@@ -170,9 +187,10 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
             <ListItemButton
               component={NavLink}
               to={item.path}
+              end={item.path === "/admin"}
               selected={location.pathname === item.path}
               sx={{
-                "&.active": {
+                "&.Mui-selected": {
                   bgcolor: "primary.main",
                   color: "#fff",
                   "& .MuiListItemIcon-root": { color: "#fff" },
@@ -202,6 +220,26 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
             />
           </ListItemButton>
         </ListItem>
+        <ListItem disablePadding component="div">
+          <Box sx={{ width: "100%", px: 2, py: 1 }}>
+            <Stack direction="row" spacing={1} justifyContent="center">
+              <Button
+                variant={i18n.language === "en" ? "contained" : "outlined"}
+                size="small"
+                onClick={() => i18n.changeLanguage("en")}
+              >
+                EN
+              </Button>
+              <Button
+                variant={i18n.language === "ar" ? "contained" : "outlined"}
+                size="small"
+                onClick={() => i18n.changeLanguage("ar")}
+              >
+                AR
+              </Button>
+            </Stack>
+          </Box>
+        </ListItem>
       </List>
     </div>
   );
@@ -227,7 +265,7 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Event Management System
+            {t("common.appName")}
           </Typography>
           {user?.role === "admin" && <NotificationBell />}
         </Toolbar>
@@ -241,7 +279,7 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             "& .MuiDrawer-paper": {

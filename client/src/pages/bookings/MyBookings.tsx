@@ -28,6 +28,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import SaveIcon from "@mui/icons-material/Save";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 interface Booking {
   _id: string;
@@ -58,6 +59,7 @@ const statusColor = (status: string) => {
 };
 
 const MyBookings: React.FC = () => {
+  const { t } = useTranslation();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -182,23 +184,23 @@ const MyBookings: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
-        My Bookings
+        {t("bookings.myBookings")}
       </Typography>
       {bookings.length === 0 ? (
-        <Alert severity="info">You have no bookings yet.</Alert>
+        <Alert severity="info">{t("bookings.noBookings")}</Alert>
       ) : (
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Image</TableCell>
-                <TableCell>Event</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Booking Date</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Total Price</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell>{t("bookings.image")}</TableCell>
+                <TableCell>{t("bookings.event")}</TableCell>
+                <TableCell>{t("bookings.date")}</TableCell>
+                <TableCell>{t("bookings.bookingDate")}</TableCell>
+                <TableCell>{t("bookings.quantity")}</TableCell>
+                <TableCell>{t("bookings.totalPrice")}</TableCell>
+                <TableCell>{t("bookings.status")}</TableCell>
+                <TableCell>{t("bookings.actions")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -245,7 +247,7 @@ const MyBookings: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={booking.status}
+                      label={t(`bookings.statuses.${booking.status}`)}
                       color={statusColor(booking.status)}
                     />
                   </TableCell>
@@ -255,7 +257,7 @@ const MyBookings: React.FC = () => {
                       size="small"
                       onClick={() => navigate(`/events/${booking.event._id}`)}
                     >
-                      View Event
+                      {t("bookings.viewEvent")}
                     </Button>
                     {booking.status === "confirmed" && (
                       <>
@@ -284,11 +286,11 @@ const MyBookings: React.FC = () => {
         </TableContainer>
       )}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>Edit Booking</DialogTitle>
+        <DialogTitle>{t("bookings.edit")}</DialogTitle>
         <DialogContent>
           <TextField
             type="number"
-            label="Number of Tickets"
+            label={t("bookings.ticketCount")}
             value={editQuantity}
             onChange={(e) =>
               setEditQuantity(Math.max(1, parseInt(e.target.value) || 1))
@@ -300,7 +302,7 @@ const MyBookings: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)} disabled={editLoading}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleEditSave}
@@ -309,7 +311,7 @@ const MyBookings: React.FC = () => {
             startIcon={<SaveIcon />}
             disabled={editLoading}
           >
-            {editLoading ? <CircularProgress size={20} /> : "Save"}
+            {editLoading ? <CircularProgress size={20} /> : t("common.save")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -337,7 +339,7 @@ const MyBookings: React.FC = () => {
             color="primary"
             onClick={handleCloseSuccessDialog}
           >
-            Close
+            {t("common.close")}
           </Button>
         </DialogActions>
       </Dialog>

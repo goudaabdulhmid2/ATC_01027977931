@@ -28,6 +28,7 @@ import EventIcon from "@mui/icons-material/Event";
 import PeopleIcon from "@mui/icons-material/People";
 import BookOnlineIcon from "@mui/icons-material/BookOnline";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import { useTranslation } from "react-i18next";
 
 interface DashboardStats {
   bookings: {
@@ -50,6 +51,7 @@ interface DashboardStats {
 }
 
 const AdminDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,11 +117,11 @@ const AdminDashboard: React.FC = () => {
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h5" gutterBottom>
-        Admin Dashboard
+        {t("admin.dashboard")}
       </Typography>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>
-          Overview
+          {t("admin.overview")}
         </Typography>
         <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12} sm={6} md={3}>
@@ -144,7 +146,9 @@ const AdminDashboard: React.FC = () => {
                 <Typography variant="h4" fontWeight={700}>
                   {stats?.events.totalEvents ?? "..."}
                 </Typography>
-                <Typography color="text.secondary">Events</Typography>
+                <Typography color="text.secondary">
+                  {t("admin.events")}
+                </Typography>
               </Stack>
             </Card>
           </Grid>
@@ -170,7 +174,9 @@ const AdminDashboard: React.FC = () => {
                 <Typography variant="h4" fontWeight={700}>
                   {stats?.users.totalUsers ?? "..."}
                 </Typography>
-                <Typography color="text.secondary">Users</Typography>
+                <Typography color="text.secondary">
+                  {t("admin.users")}
+                </Typography>
               </Stack>
             </Card>
           </Grid>
@@ -196,7 +202,9 @@ const AdminDashboard: React.FC = () => {
                 <Typography variant="h4" fontWeight={700}>
                   {stats?.bookings.totalBookings ?? "..."}
                 </Typography>
-                <Typography color="text.secondary">Bookings</Typography>
+                <Typography color="text.secondary">
+                  {t("admin.bookings")}
+                </Typography>
               </Stack>
             </Card>
           </Grid>
@@ -220,7 +228,9 @@ const AdminDashboard: React.FC = () => {
                 <Typography variant="h4" fontWeight={700}>
                   ${stats?.bookings.totalRevenue?.toLocaleString() ?? "..."}
                 </Typography>
-                <Typography color="text.secondary">Revenue</Typography>
+                <Typography color="text.secondary">
+                  {t("admin.revenue")}
+                </Typography>
               </Stack>
             </Card>
           </Grid>
@@ -230,7 +240,7 @@ const AdminDashboard: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Paper elevation={2} sx={{ p: 3, height: "100%" }}>
             <Typography variant="h6" gutterBottom>
-              Recent Activity
+              {t("admin.recentActivity")}
             </Typography>
             <Divider sx={{ mb: 2 }} />
             {activityLoading ? (
@@ -243,7 +253,7 @@ const AdminDashboard: React.FC = () => {
               <Stack spacing={2}>
                 {activity.length === 0 ? (
                   <Typography color="text.secondary">
-                    No recent activity.
+                    {t("admin.noRecentActivity")}
                   </Typography>
                 ) : (
                   activity.map((item, idx) => (
@@ -262,7 +272,7 @@ const AdminDashboard: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Paper elevation={2} sx={{ p: 3, height: "100%" }}>
             <Typography variant="h6" gutterBottom>
-              Bookings & Revenue Trends
+              {t("admin.bookingTrends")}
             </Typography>
             <Divider sx={{ mb: 2 }} />
             {trendsLoading ? (
@@ -282,7 +292,7 @@ const AdminDashboard: React.FC = () => {
                   <YAxis
                     yAxisId="left"
                     label={{
-                      value: "Bookings",
+                      value: t("admin.bookings"),
                       angle: -90,
                       position: "insideLeft",
                     }}
@@ -291,7 +301,7 @@ const AdminDashboard: React.FC = () => {
                     yAxisId="right"
                     orientation="right"
                     label={{
-                      value: "Revenue",
+                      value: t("admin.revenue"),
                       angle: 90,
                       position: "insideRight",
                     }}
@@ -303,14 +313,14 @@ const AdminDashboard: React.FC = () => {
                     type="monotone"
                     dataKey="bookings"
                     stroke="#1976d2"
-                    name="Bookings"
+                    name={t("admin.bookings")}
                   />
                   <Line
                     yAxisId="right"
                     type="monotone"
                     dataKey="revenue"
                     stroke="#43a047"
-                    name="Revenue"
+                    name={t("admin.revenue")}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -318,8 +328,8 @@ const AdminDashboard: React.FC = () => {
           </Paper>
         </Grid>
       </Grid>
-      <Typography variant="subtitle1" gutterBottom>
-        Welcome, Admin! Use the links below to manage the system.
+      <Typography variant="subtitle1" gutterBottom sx={{ mt: 4 }}>
+        {t("admin.welcomeMessage")}
       </Typography>
       <Grid container spacing={2} sx={{ mt: 2, mb: 4 }}>
         <Grid item>
@@ -329,7 +339,7 @@ const AdminDashboard: React.FC = () => {
             variant="contained"
             color="primary"
           >
-            Manage Events
+            {t("admin.manageEvents")}
           </Button>
         </Grid>
         <Grid item>
@@ -339,7 +349,7 @@ const AdminDashboard: React.FC = () => {
             variant="contained"
             color="secondary"
           >
-            Manage Users
+            {t("admin.manageUsers")}
           </Button>
         </Grid>
         <Grid item>
@@ -349,7 +359,7 @@ const AdminDashboard: React.FC = () => {
             variant="contained"
             color="success"
           >
-            Manage Bookings
+            {t("admin.manageBookings")}
           </Button>
         </Grid>
       </Grid>

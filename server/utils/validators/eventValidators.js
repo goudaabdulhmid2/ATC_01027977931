@@ -21,7 +21,7 @@ exports.createEventValidator = [
   check('date')
     .notEmpty()
     .withMessage('Date is required')
-    .isDate()
+    .isISO8601()
     .withMessage('Invalid date format'),
   check('location')
     .notEmpty()
@@ -79,7 +79,7 @@ exports.updateEventValidator = [
     .withMessage('Description must be a string')
     .isLength({ min: 10 })
     .withMessage('Description must be at least 10 characters long'),
-  check('date').optional().isDate().withMessage('Invalid date format'),
+  check('date').optional().isISO8601().withMessage('Invalid date format'),
   check('location')
     .optional()
     .isString()

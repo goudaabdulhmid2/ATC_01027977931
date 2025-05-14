@@ -107,7 +107,10 @@ eventSchema.virtual('isUpcoming').get(function () {
 });
 
 eventSchema.virtual('imgUrl').get(function () {
-  return this.image ? `${process.env.BASE_URL}/${this.image}` : '';
+  if (!this.image) return '';
+  // Remove any leading slashes to prevent double slashes
+  const cleanPath = this.image.replace(/^\/+/, '');
+  return `${process.env.BASE_URL}/${cleanPath}`;
 });
 
 // Pre-save middleware to ensure availableTickets doesn't exceed capacity

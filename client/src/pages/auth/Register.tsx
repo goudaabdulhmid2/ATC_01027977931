@@ -11,11 +11,13 @@ import {
   Link,
   Paper,
   CircularProgress,
+  Grid,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { register, clearError } from "../../store/slices/authSlice";
 import { RootState, AppDispatch } from "../../store";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const validationSchema = Yup.object({
   name: Yup.string()
@@ -38,6 +40,7 @@ const Register = () => {
   const { loading, error, user } = useSelector(
     (state: RootState) => state.auth
   );
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user) {
@@ -96,7 +99,7 @@ const Register = () => {
           }}
         >
           <Typography component="h1" variant="h5">
-            Sign up
+            {t("auth.signUp")}
           </Typography>
           <Box
             component="form"
@@ -108,7 +111,7 @@ const Register = () => {
               fullWidth
               id="name"
               name="name"
-              label="Full Name"
+              label={t("auth.name")}
               autoComplete="name"
               autoFocus
               value={formik.values.name}
@@ -121,7 +124,7 @@ const Register = () => {
               fullWidth
               id="email"
               name="email"
-              label="Email Address"
+              label={t("auth.email")}
               autoComplete="email"
               value={formik.values.email}
               onChange={formik.handleChange}
@@ -132,7 +135,7 @@ const Register = () => {
               margin="normal"
               fullWidth
               name="password"
-              label="Password"
+              label={t("auth.password")}
               type="password"
               id="password"
               autoComplete="new-password"
@@ -145,7 +148,7 @@ const Register = () => {
               margin="normal"
               fullWidth
               name="passwordConfirm"
-              label="Confirm Password"
+              label={t("auth.confirmPassword")}
               type="password"
               id="passwordConfirm"
               value={formik.values.passwordConfirm}
@@ -170,11 +173,11 @@ const Register = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : "Sign Up"}
+              {loading ? t("common.loading") : t("auth.signUp")}
             </Button>
             <Box sx={{ textAlign: "center" }}>
               <Link component={RouterLink} to="/login" variant="body2">
-                {"Already have an account? Sign in"}
+                {t("auth.alreadyHaveAccount")}
               </Link>
             </Box>
           </Box>

@@ -28,6 +28,7 @@ import {
 } from "../../store/slices/notificationSlice";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const NotificationBell = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -36,6 +37,7 @@ const NotificationBell = () => {
   const { notifications, unreadCount } = useSelector(
     (state: RootState) => state.notifications
   );
+  const { t } = useTranslation();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -93,10 +95,10 @@ const NotificationBell = () => {
             alignItems: "center",
           }}
         >
-          <Typography variant="h6">Notifications</Typography>
+          <Typography variant="h6">{t("notifications.title")}</Typography>
           {unreadCount > 0 && (
             <Button size="small" onClick={handleMarkAllAsRead}>
-              Mark all as read
+              {t("notifications.markAllAsRead")}
             </Button>
           )}
         </Box>
@@ -104,7 +106,7 @@ const NotificationBell = () => {
         <List sx={{ p: 0 }}>
           {notifications.length === 0 ? (
             <ListItem>
-              <ListItemText primary="No notifications" />
+              <ListItemText primary={t("notifications.noNotifications")} />
             </ListItem>
           ) : (
             notifications.map((notification) => (

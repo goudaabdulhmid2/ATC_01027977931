@@ -6,12 +6,16 @@ import App from "./App";
 import "./index.css";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import ErrorBoundary from "./components/ErrorBoundary";
+import "./i18n";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Provider store={store}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </LocalizationProvider>
     </Provider>
   </React.StrictMode>

@@ -17,6 +17,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../../utils/axios";
 import { getCurrentUser } from "../../store/slices/authSlice";
+import { useTranslation } from "react-i18next";
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
@@ -36,6 +37,7 @@ const passwordValidationSchema = Yup.object({
 });
 
 const UserProfile: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((state: RootState) => state.auth.user);
   const [loading, setLoading] = useState(false);
@@ -129,7 +131,7 @@ const UserProfile: React.FC = () => {
     <Box maxWidth={500} mx="auto" mt={4}>
       <Paper sx={{ p: 4 }}>
         <Stack spacing={3} alignItems="center">
-          <Typography variant="h5">My Profile</Typography>
+          <Typography variant="h5">{t("profile.personalInfo")}</Typography>
           <Avatar
             src={imagePreview || user.imgUrl || user.profileImage || undefined}
             sx={{ width: 80, height: 80, mb: 1 }}
@@ -137,7 +139,7 @@ const UserProfile: React.FC = () => {
             {user.name ? user.name.charAt(0).toUpperCase() : "U"}
           </Avatar>
           <Button variant="outlined" component="label">
-            Change Avatar
+            {t("profile.uploadImage")}
             <input
               type="file"
               accept="image/*"
@@ -148,7 +150,7 @@ const UserProfile: React.FC = () => {
           <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
             <Stack spacing={2}>
               <TextField
-                label="Name"
+                label={t("profile.name")}
                 name="name"
                 value={formik.values.name}
                 onChange={formik.handleChange}
@@ -157,7 +159,7 @@ const UserProfile: React.FC = () => {
                 fullWidth
               />
               <TextField
-                label="Email"
+                label={t("profile.email")}
                 name="email"
                 value={formik.values.email}
                 onChange={formik.handleChange}
@@ -166,7 +168,7 @@ const UserProfile: React.FC = () => {
                 fullWidth
               />
               <TextField
-                label="Role"
+                label={t("profile.role")}
                 value={user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                 InputProps={{ readOnly: true }}
                 fullWidth
@@ -180,18 +182,18 @@ const UserProfile: React.FC = () => {
                 fullWidth
                 disabled={loading}
               >
-                {loading ? <CircularProgress size={24} /> : "Save Changes"}
+                {loading ? <CircularProgress size={24} /> : t("profile.save")}
               </Button>
             </Stack>
           </form>
           <Divider sx={{ my: 4 }} />
           <Typography variant="h6" align="center">
-            Change Password
+            {t("profile.changePassword")}
           </Typography>
           <form onSubmit={pwFormik.handleSubmit} style={{ width: "100%" }}>
             <Stack spacing={2}>
               <TextField
-                label="Current Password"
+                label={t("profile.currentPassword")}
                 name="currentPassword"
                 type="password"
                 value={pwFormik.values.currentPassword}
@@ -207,7 +209,7 @@ const UserProfile: React.FC = () => {
                 fullWidth
               />
               <TextField
-                label="New Password"
+                label={t("profile.newPassword")}
                 name="newPassword"
                 type="password"
                 value={pwFormik.values.newPassword}
@@ -222,7 +224,7 @@ const UserProfile: React.FC = () => {
                 fullWidth
               />
               <TextField
-                label="Confirm New Password"
+                label={t("profile.confirmNewPassword")}
                 name="confirmPassword"
                 type="password"
                 value={pwFormik.values.confirmPassword}
@@ -246,7 +248,11 @@ const UserProfile: React.FC = () => {
                 fullWidth
                 disabled={pwLoading}
               >
-                {pwLoading ? <CircularProgress size={24} /> : "Change Password"}
+                {pwLoading ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  t("profile.changePassword")
+                )}
               </Button>
             </Stack>
           </form>

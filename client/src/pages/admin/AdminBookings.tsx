@@ -25,7 +25,7 @@ import {
   DialogActions,
   Pagination,
 } from "@mui/material";
-import { Cancel, Visibility, Edit } from "@mui/icons-material";
+import { Cancel, Visibility, Edit, Delete } from "@mui/icons-material";
 import api from "../../utils/axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
@@ -72,6 +72,9 @@ const AdminBookings: React.FC = () => {
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
   const [editForm, setEditForm] = useState({ quantity: 1, status: "pending" });
   const [editLoading, setEditLoading] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteBookingId, setDeleteBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -231,7 +234,7 @@ const AdminBookings: React.FC = () => {
       });
       setBookings((prev) =>
         prev.map((b) =>
-          b._id === editBooking._id ? { ...b, ...res.data.data.doc } : b
+          b._id === editBooking._id ? { ...b, ...res.data.data.booking } : b
         )
       );
       setSnackbar({
@@ -249,6 +252,47 @@ const AdminBookings: React.FC = () => {
     } finally {
       setEditLoading(false);
     }
+  };
+
+  const handleOpenDelete = (booking: Booking) => {
+    setDeleteBookingId(booking._id);
+    setDeleteDialog(true);
+  };
+  const handleCloseDelete = () => {
+    setDeleteDialog(false);
+    setDeleteBookingId(null);
+  };
+  const handleDeleteBooking = async () => {
+    if (!deleteBookingId) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/admin/bookings/${deleteBookingId}`);
+      setBookings((prev) => prev.filter((b) => b._id !== deleteBookingId));
+      setSnackbar({
+        open: true,
+        message: "Booking deleted!",
+        severity: "success",
+      });
+      setDeleteDialog(false);
+    } catch (err: any) {
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || "Failed to delete booking",
+        severity: "error",
+      });
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setStatusFilter("");
+    setEventFilter("");
+    setDateFrom(null);
+    setDateTo(null);
+    setRowsPerPage(10);
+    setPage(1);
   };
 
   return (
@@ -325,6 +369,13 @@ const AdminBookings: React.FC = () => {
               </MenuItem>
             ))}
           </TextField>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleResetFilters}
+          >
+            Reset Filters
+          </Button>
         </Stack>
       </Stack>
       {error && (
@@ -418,6 +469,15 @@ const AdminBookings: React.FC = () => {
                           </IconButton>
                         </Tooltip>
                       )}
+                      <Tooltip title="Delete Booking">
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={() => handleOpenDelete(booking)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -552,6 +612,31 @@ const AdminBookings: React.FC = () => {
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+      {/* Delete Booking Dialog */}
+      <Dialog
+        open={deleteDialog}
+        onClose={handleCloseDelete}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Delete Booking</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this booking?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete} disabled={deleteLoading}>
+            No
+          </Button>
+          <Button
+            onClick={handleDeleteBooking}
+            color="error"
+            variant="contained"
+            disabled={deleteLoading}
+          >
+            {deleteLoading ? <CircularProgress size={24} /> : "Yes, Delete"}
+          </Button>
+        </DialogActions>
       </Dialog>
       {/* Snackbar */}
       <Snackbar

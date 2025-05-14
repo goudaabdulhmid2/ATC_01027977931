@@ -46,6 +46,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import api from "../../utils/axios";
+import { useTranslation } from "react-i18next";
 
 const CATEGORY_OPTIONS = [
   "Music",
@@ -73,6 +74,7 @@ interface Event {
 }
 
 const AdminEvents: React.FC = () => {
+  const { t } = useTranslation();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +84,7 @@ const AdminEvents: React.FC = () => {
   const [createLoading, setCreateLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<Event | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -155,18 +158,37 @@ const AdminEvents: React.FC = () => {
   };
 
   const handleFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e:
+      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      | SelectChangeEvent<string>
   ) => {
     const { name, value, type, checked, files } = e.target as any;
+
     if (name === "image" && files) {
       const file = files[0];
-      setForm((prev) => ({ ...prev, image: file }));
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      if (file) {
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+          setCreateError("Please upload an image file");
+          return;
+        }
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          setCreateError("Image size should be less than 5MB");
+          return;
+        }
+        // Update form state with the file
+        setForm((prev) => ({ ...prev, image: file }));
+        // Create preview URL
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+        // Clear any previous errors
+        setCreateError(null);
+        setEditError(null);
+      }
     } else if (type === "checkbox") {
       setForm((prev) => ({ ...prev, [name]: checked }));
     } else {
@@ -181,139 +203,129 @@ const AdminEvents: React.FC = () => {
     }
   };
 
+  const validateForm = (isEdit: boolean = false) => {
+    const errors: string[] = [];
+
+    // Required fields validation
+    if (!form.title.trim()) errors.push("Title is required");
+    if (!form.description.trim()) errors.push("Description is required");
+    if (!form.date) errors.push("Date is required");
+    if (!form.location.trim()) errors.push("Location is required");
+    if (!form.price) errors.push("Price is required");
+    if (!form.category) errors.push("Category is required");
+    if (!form.capacity) errors.push("Capacity is required");
+    if (!form.availableTickets)
+      errors.push("Available tickets count is required");
+
+    // Format and type validation
+    if (form.title.trim().length < 3)
+      errors.push("Title must be at least 3 characters long");
+    if (form.description.trim().length < 10)
+      errors.push("Description must be at least 10 characters long");
+    if (Number(form.price) <= 0) errors.push("Price must be a positive number");
+    if (!CATEGORY_OPTIONS.includes(form.category))
+      errors.push("Invalid category");
+    if (Math.floor(Number(form.capacity)) < 1)
+      errors.push("Capacity must be a positive integer");
+    if (Math.floor(Number(form.availableTickets)) < 0)
+      errors.push("Available tickets count must be a non-negative integer");
+    if (
+      Math.floor(Number(form.availableTickets)) >
+      Math.floor(Number(form.capacity))
+    ) {
+      errors.push("Available tickets cannot exceed capacity");
+    }
+
+    return errors;
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateLoading(true);
     setCreateError(null);
 
-    // Validate required fields
-    if (!form.title.trim()) {
-      setCreateError("Title is required");
-      setCreateLoading(false);
-      return;
-    }
-    if (!form.description.trim()) {
-      setCreateError("Description is required");
-      setCreateLoading(false);
-      return;
-    }
-    if (!form.date) {
-      setCreateError("Date is required");
-      setCreateLoading(false);
-      return;
-    }
-    if (!form.location.trim()) {
-      setCreateError("Location is required");
-      setCreateLoading(false);
-      return;
-    }
-    if (!form.price) {
-      setCreateError("Price is required");
-      setCreateLoading(false);
-      return;
-    }
-    if (!form.category) {
-      setCreateError("Category is required");
-      setCreateLoading(false);
-      return;
-    }
-    if (!form.capacity) {
-      setCreateError("Capacity is required");
-      setCreateLoading(false);
-      return;
-    }
-    if (!form.availableTickets) {
-      setCreateError("Available tickets count is required");
-      setCreateLoading(false);
-      return;
-    }
-
-    // Validate types and formats
-    if (form.title.trim().length < 3) {
-      setCreateError("Title must be at least 3 characters long");
-      setCreateLoading(false);
-      return;
-    }
-    if (form.description.trim().length < 10) {
-      setCreateError("Description must be at least 10 characters long");
-      setCreateLoading(false);
-      return;
-    }
-    if (Number(form.price) <= 0) {
-      setCreateError("Price must be a positive number");
-      setCreateLoading(false);
-      return;
-    }
-    if (!CATEGORY_OPTIONS.includes(form.category)) {
-      setCreateError("Invalid category");
-      setCreateLoading(false);
-      return;
-    }
-    if (Math.floor(Number(form.capacity)) < 1) {
-      setCreateError("Capacity must be a positive integer");
-      setCreateLoading(false);
-      return;
-    }
-    if (Math.floor(Number(form.availableTickets)) < 0) {
-      setCreateError("Available tickets count must be a non-negative integer");
-      setCreateLoading(false);
-      return;
-    }
-    if (
-      Math.floor(Number(form.availableTickets)) >
-      Math.floor(Number(form.capacity))
-    ) {
-      setCreateError("Available tickets cannot exceed capacity");
-      setCreateLoading(false);
-      return;
-    }
-
     try {
-      // Prepare the event data
-      const eventData = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        date: form.date,
-        location: form.location.trim(),
-        price: Math.floor(Number(form.price)),
-        category: form.category,
-        capacity: Math.floor(Number(form.capacity)),
-        availableTickets: Math.floor(Number(form.availableTickets)),
-        isActive: Boolean(form.isActive),
-      };
+      // Create FormData object
+      const formData = new FormData();
 
-      // Log the data being sent
-      console.log("Event data being sent:", eventData);
+      // Debug log the form state
+      console.log("Form state before submission:", form);
 
-      // First create the event
-      const res = await api.post("/admin/events", eventData);
-
-      // If there's an image, upload it separately
-      if (form.image) {
-        const imageFormData = new FormData();
-        imageFormData.append("image", form.image);
-        await api.patch(
-          `/admin/events/${res.data.data.newDoc._id}`,
-          imageFormData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
+      // Add all form fields with proper type conversion
+      Object.entries(form).forEach(([key, value]) => {
+        if (key === "image" && value instanceof File) {
+          console.log("Adding image file:", value.name, value.type, value.size);
+          formData.append("image", value);
+        } else if (key === "date" && typeof value === "string") {
+          const dateValue = new Date(value).toISOString();
+          console.log("Adding date:", dateValue);
+          formData.append("date", dateValue);
+        } else if (
+          key === "price" ||
+          key === "capacity" ||
+          key === "availableTickets"
+        ) {
+          const numValue = Math.floor(Number(value));
+          if (!isNaN(numValue)) {
+            console.log(`Adding ${key}:`, numValue);
+            formData.append(key, numValue.toString());
           }
-        );
+        } else if (key !== "image" && value !== null) {
+          console.log(`Adding ${key}:`, value);
+          formData.append(key, String(value));
+        }
+      });
+
+      // Debug log the FormData contents
+      console.log("FormData contents:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
       }
 
+      // Create event
+      const res = await api.post("/admin/events", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("Response from server:", res.data);
+
+      // Update state and show success message
       setEvents((prev) => [res.data.data.newDoc, ...prev]);
       setOpenCreate(false);
+      setForm({
+        title: "",
+        description: "",
+        date: "",
+        location: "",
+        price: "",
+        category: CATEGORY_OPTIONS[0],
+        capacity: "",
+        availableTickets: "",
+        isActive: true,
+        image: null,
+      });
+      setImagePreview(null);
       setSnackbar({
         open: true,
-        message: "Event created successfully!",
+        message: t("admin.success.eventCreated"),
         severity: "success",
       });
     } catch (err: any) {
       console.error("Error response:", err.response?.data);
-      setCreateError(err.response?.data?.message || "Failed to create event");
+      console.error("Error details:", {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        headers: err.response?.headers,
+        data: err.response?.data,
+      });
+      const errorMessage =
+        err.response?.data?.message || t("admin.error.createEvent");
+      setCreateError(errorMessage);
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to create event",
+        message: errorMessage,
         severity: "error",
       });
     } finally {
@@ -335,7 +347,8 @@ const AdminEvents: React.FC = () => {
       isActive: event.isActive,
       image: null,
     });
-    setImagePreview(event.imgUrl || event.image || null);
+    // Set image preview from imgUrl
+    setImagePreview(event.imgUrl || null);
     setEditError(null);
     setOpenEdit(true);
   };
@@ -353,135 +366,97 @@ const AdminEvents: React.FC = () => {
     setEditLoading(true);
     setEditError(null);
 
-    // Validate required fields
-    if (!form.title.trim()) {
-      setEditError("Title is required");
-      setEditLoading(false);
-      return;
-    }
-    if (!form.description.trim()) {
-      setEditError("Description is required");
-      setEditLoading(false);
-      return;
-    }
-    if (!form.date) {
-      setEditError("Date is required");
-      setEditLoading(false);
-      return;
-    }
-    if (!form.location.trim()) {
-      setEditError("Location is required");
-      setEditLoading(false);
-      return;
-    }
-    if (!form.price) {
-      setEditError("Price is required");
-      setEditLoading(false);
-      return;
-    }
-    if (!form.category) {
-      setEditError("Category is required");
-      setEditLoading(false);
-      return;
-    }
-    if (!form.capacity) {
-      setEditError("Capacity is required");
-      setEditLoading(false);
-      return;
-    }
-    if (!form.availableTickets) {
-      setEditError("Available tickets count is required");
-      setEditLoading(false);
-      return;
-    }
-
-    // Validate types and formats
-    if (form.title.trim().length < 3) {
-      setEditError("Title must be at least 3 characters long");
-      setEditLoading(false);
-      return;
-    }
-    if (form.description.trim().length < 10) {
-      setEditError("Description must be at least 10 characters long");
-      setEditLoading(false);
-      return;
-    }
-    if (Number(form.price) <= 0) {
-      setEditError("Price must be a positive number");
-      setEditLoading(false);
-      return;
-    }
-    if (!CATEGORY_OPTIONS.includes(form.category)) {
-      setEditError("Invalid category");
-      setEditLoading(false);
-      return;
-    }
-    if (Math.floor(Number(form.capacity)) < 1) {
-      setEditError("Capacity must be a positive integer");
-      setEditLoading(false);
-      return;
-    }
-    if (Math.floor(Number(form.availableTickets)) < 0) {
-      setEditError("Available tickets count must be a non-negative integer");
-      setEditLoading(false);
-      return;
-    }
-    if (
-      Math.floor(Number(form.availableTickets)) >
-      Math.floor(Number(form.capacity))
-    ) {
-      setEditError("Available tickets cannot exceed capacity");
-      setEditLoading(false);
-      return;
-    }
-
     try {
-      // Prepare the event data
-      const eventData = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        date: form.date,
-        location: form.location.trim(),
-        price: Math.floor(Number(form.price)),
-        category: form.category,
-        capacity: Math.floor(Number(form.capacity)),
-        availableTickets: Math.floor(Number(form.availableTickets)),
-        isActive: Boolean(form.isActive),
-      };
+      // Create FormData object
+      const formData = new FormData();
 
-      // First update the event
-      const res = await api.patch(
-        `/admin/events/${selectedEvent._id}`,
-        eventData
-      );
+      // Debug log the form state
+      console.log("Form state before update:", form);
 
-      // If there's a new image, upload it
-      if (form.image) {
-        const imageFormData = new FormData();
-        imageFormData.append("image", form.image);
-        await api.patch(`/admin/events/${selectedEvent._id}`, imageFormData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+      // Add all form fields with proper type conversion
+      Object.entries(form).forEach(([key, value]) => {
+        if (key === "image" && value instanceof File) {
+          console.log("Adding image file:", value.name, value.type, value.size);
+          formData.append("image", value);
+        } else if (key === "date" && typeof value === "string") {
+          const dateValue = new Date(value).toISOString();
+          console.log("Adding date:", dateValue);
+          formData.append("date", dateValue);
+        } else if (
+          key === "price" ||
+          key === "capacity" ||
+          key === "availableTickets"
+        ) {
+          const numValue = Math.floor(Number(value));
+          if (!isNaN(numValue)) {
+            console.log(`Adding ${key}:`, numValue);
+            formData.append(key, numValue.toString());
+          }
+        } else if (key !== "image" && value !== null) {
+          console.log(`Adding ${key}:`, value);
+          formData.append(key, String(value));
+        }
+      });
+
+      // Debug log the FormData contents
+      console.log("FormData contents:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
       }
 
-      // Update the events list
+      // Update event
+      const res = await api.patch(
+        `/admin/events/${selectedEvent._id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Response from server:", res.data);
+
+      // Update state and show success message
       setEvents((prev) =>
         prev.map((event) =>
           event._id === selectedEvent._id ? res.data.data.doc : event
         )
       );
       setOpenEdit(false);
+      setSelectedEvent(null);
+      setForm({
+        title: "",
+        description: "",
+        date: "",
+        location: "",
+        price: "",
+        category: CATEGORY_OPTIONS[0],
+        capacity: "",
+        availableTickets: "",
+        isActive: true,
+        image: null,
+      });
+      setImagePreview(null);
       setSnackbar({
         open: true,
-        message: "Event updated successfully!",
+        message: t("admin.success.eventUpdated"),
         severity: "success",
       });
     } catch (err: any) {
       console.error("Error response:", err.response?.data);
-      setEditError(err.response?.data?.message || "Failed to update event");
+      console.error("Error details:", {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        headers: err.response?.headers,
+        data: err.response?.data,
+      });
+      const errorMessage =
+        err.response?.data?.message || t("admin.error.updateEvent");
+      setEditError(errorMessage);
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to update event",
+        message: errorMessage,
         severity: "error",
       });
     } finally {
@@ -490,8 +465,13 @@ const AdminEvents: React.FC = () => {
   };
 
   const handleDelete = async (eventId: string) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
+    const eventToDelete = events.find((e) => e._id === eventId);
+    if (eventToDelete) {
+      setDeleteDialog(eventToDelete);
+    }
+  };
 
+  const handleConfirmDelete = async (eventId: string) => {
     setDeleteLoading(true);
     try {
       await api.delete(`/admin/events/${eventId}`);
@@ -511,6 +491,7 @@ const AdminEvents: React.FC = () => {
       });
     } finally {
       setDeleteLoading(false);
+      setDeleteDialog(null);
     }
   };
 
@@ -585,6 +566,36 @@ const AdminEvents: React.FC = () => {
     setPage(1);
   };
 
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter("");
+    setStatusFilter("");
+    setDateRange({ start: null, end: null });
+    setRowsPerPage(10);
+    setPage(1);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenCreate(false);
+    setOpenEdit(false);
+    setSelectedEvent(null);
+    setImagePreview(null);
+    setCreateError(null);
+    setEditError(null);
+    setForm({
+      title: "",
+      description: "",
+      date: "",
+      location: "",
+      price: "",
+      category: CATEGORY_OPTIONS[0],
+      capacity: "",
+      availableTickets: "",
+      isActive: true,
+      image: null,
+    });
+  };
+
   return (
     <Box sx={{ p: 4 }}>
       <Stack
@@ -594,7 +605,7 @@ const AdminEvents: React.FC = () => {
         mb={3}
       >
         <Typography variant="h5" component="h1" gutterBottom>
-          Event Management
+          {t("admin.manageEvents")}
         </Typography>
         <Button
           variant="contained"
@@ -602,7 +613,7 @@ const AdminEvents: React.FC = () => {
           startIcon={<Add />}
           onClick={handleOpenCreate}
         >
-          Create Event
+          {t("admin.createEvent")}
         </Button>
       </Stack>
 
@@ -613,89 +624,113 @@ const AdminEvents: React.FC = () => {
       )}
 
       {/* Filters Section */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6} md={3}>
-            <TextField
-              fullWidth
-              label="Search"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              InputProps={{
-                startAdornment: (
-                  <Search sx={{ mr: 1, color: "text.secondary" }} />
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={categoryFilter}
-                label="Category"
-                onChange={handleCategoryFilterChange}
-              >
-                <MenuItem value="">All Categories</MenuItem>
-                {CATEGORY_OPTIONS.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Status"
-                onChange={handleStatusFilterChange}
-              >
-                <MenuItem value="">All Status</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Start Date"
-                value={dateRange.start}
-                onChange={(date) => handleDateRangeChange("start", date)}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="End Date"
-                value={dateRange.end}
-                onChange={(date) => handleDateRangeChange("end", date)}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={12} sm={6} md={1}>
-            <FormControl fullWidth>
-              <InputLabel>Rows</InputLabel>
-              <Select
-                value={rowsPerPage.toString()}
-                label="Rows"
-                onChange={handleRowsPerPageChange}
-              >
-                <MenuItem value={"5"}>5</MenuItem>
-                <MenuItem value={"10"}>10</MenuItem>
-                <MenuItem value={"25"}>25</MenuItem>
-                <MenuItem value={"50"}>50</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-      </Paper>
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        flexWrap="wrap"
+        mb={3}
+      >
+        <TextField
+          label={t("admin.search")}
+          value={searchQuery}
+          onChange={handleSearchChange}
+          size="small"
+          InputProps={{
+            startAdornment: <Search sx={{ mr: 1, color: "text.secondary" }} />,
+          }}
+          sx={{ minWidth: 180, maxWidth: 220, flex: "1 1 180px" }}
+        />
+        <FormControl
+          sx={{ minWidth: 140, maxWidth: 180, flex: "1 1 140px" }}
+          size="small"
+        >
+          <InputLabel>{t("events.category")}</InputLabel>
+          <Select
+            value={categoryFilter}
+            label={t("events.category")}
+            onChange={handleCategoryFilterChange}
+          >
+            <MenuItem value="">{t("admin.all")}</MenuItem>
+            {CATEGORY_OPTIONS.map((category) => (
+              <MenuItem key={category} value={category}>
+                {t(`events.categories.${category}`) !==
+                `events.categories.${category}`
+                  ? t(`events.categories.${category}`)
+                  : category}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl
+          sx={{ minWidth: 120, maxWidth: 150, flex: "1 1 120px" }}
+          size="small"
+        >
+          <InputLabel>{t("admin.status")}</InputLabel>
+          <Select
+            value={statusFilter}
+            label={t("admin.status")}
+            onChange={handleStatusFilterChange}
+          >
+            <MenuItem value="">{t("admin.all")}</MenuItem>
+            <MenuItem value="active">{t("admin.active")}</MenuItem>
+            <MenuItem value="inactive">{t("admin.inactive")}</MenuItem>
+          </Select>
+        </FormControl>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DatePicker
+            label={t("events.startDate")}
+            value={dateRange.start}
+            onChange={(date) => handleDateRangeChange("start", date)}
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                size: "small",
+                sx: { minWidth: 120, maxWidth: 160, flex: "1 1 120px" },
+              },
+            }}
+          />
+        </LocalizationProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DatePicker
+            label={t("events.endDate")}
+            value={dateRange.end}
+            onChange={(date) => handleDateRangeChange("end", date)}
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                size: "small",
+                sx: { minWidth: 120, maxWidth: 160, flex: "1 1 120px" },
+              },
+            }}
+          />
+        </LocalizationProvider>
+        <FormControl
+          sx={{ minWidth: 90, maxWidth: 120, flex: "1 1 90px" }}
+          size="small"
+        >
+          <InputLabel>{t("admin.rows")}</InputLabel>
+          <Select
+            value={rowsPerPage.toString()}
+            label={t("admin.rows")}
+            onChange={handleRowsPerPageChange}
+          >
+            {[5, 10, 25, 50].map((n) => (
+              <MenuItem key={n} value={n.toString()}>
+                {n}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={handleResetFilters}
+          sx={{ height: 40, minWidth: 120 }}
+        >
+          {t("admin.resetFilters", "Reset Filters")}
+        </Button>
+      </Stack>
 
       <TableContainer component={Paper} sx={{ mb: 4 }}>
         <Table>
@@ -714,118 +749,128 @@ const AdminEvents: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedEvents.map((event) => {
-              // Use the imgUrl virtual field from the backend if available
-              const imageUrl = event.imgUrl || event.image || "";
-              return (
-                <TableRow key={event._id} hover>
-                  <TableCell>
-                    {imageUrl ? (
-                      <Box
-                        component="img"
-                        src={imageUrl}
-                        alt={event.title}
-                        sx={{
-                          width: 50,
-                          height: 50,
-                          objectFit: "cover",
-                          borderRadius: 1,
-                        }}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          width: 50,
-                          height: 50,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          bgcolor: "grey.100",
-                          borderRadius: 1,
-                        }}
-                      >
-                        <ImageIcon color="disabled" />
-                      </Box>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight="medium">
-                      {event.title}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(event.date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>{event.location}</TableCell>
-                  <TableCell>${event.price}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={event.category}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>{event.capacity}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={`${event.availableTickets} left`}
-                      size="small"
-                      color={
-                        event.availableTickets === 0
-                          ? "error"
-                          : event.availableTickets < event.capacity / 2
-                          ? "warning"
-                          : "success"
-                      }
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={event.isActive ? "Active" : "Inactive"}
-                      size="small"
-                      color={event.isActive ? "success" : "default"}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      justifyContent="flex-end"
-                    >
-                      <Tooltip title="Edit Event">
-                        <IconButton
-                          color="primary"
-                          size="small"
-                          onClick={() => handleOpenEdit(event)}
-                          disabled={editLoading}
-                        >
-                          <Edit />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete Event">
-                        <IconButton
-                          color="error"
-                          size="small"
-                          onClick={() => handleDelete(event._id)}
-                          disabled={deleteLoading}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            {paginatedEvents.length === 0 && !loading && (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={10} align="center">
+                  <CircularProgress size={24} />
+                </TableCell>
+              </TableRow>
+            ) : paginatedEvents.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
                   <Typography color="text.secondary">
-                    No events found matching your filters.
+                    {t("admin.noData")}
                   </Typography>
                 </TableCell>
               </TableRow>
+            ) : (
+              paginatedEvents.map((event) => {
+                // Use the imgUrl virtual field from the backend if available
+                const imageUrl = event.imgUrl || event.image || "";
+                return (
+                  <TableRow key={event._id} hover>
+                    <TableCell>
+                      {imageUrl ? (
+                        <Box
+                          component="img"
+                          src={imageUrl}
+                          alt={event.title}
+                          sx={{
+                            width: 50,
+                            height: 50,
+                            objectFit: "cover",
+                            borderRadius: 1,
+                          }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            width: 50,
+                            height: 50,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "grey.100",
+                            borderRadius: 1,
+                          }}
+                        >
+                          <ImageIcon color="disabled" />
+                        </Box>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="medium">
+                        {event.title}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(event.date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>{event.location}</TableCell>
+                    <TableCell>${event.price}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={t(`events.categories.${event.category}`)}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>{event.capacity}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={`${event.availableTickets} left`}
+                        size="small"
+                        color={
+                          event.availableTickets === 0
+                            ? "error"
+                            : event.availableTickets < event.capacity / 2
+                            ? "warning"
+                            : "success"
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={
+                          event.isActive
+                            ? t("admin.active")
+                            : t("admin.inactive")
+                        }
+                        color={event.isActive ? "success" : "default"}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        justifyContent="flex-end"
+                      >
+                        <Tooltip title={t("admin.edit")}>
+                          <IconButton
+                            color="primary"
+                            size="small"
+                            onClick={() => handleOpenEdit(event)}
+                          >
+                            <Edit />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={t("admin.delete")}>
+                          <IconButton
+                            color="error"
+                            size="small"
+                            onClick={() => handleDelete(event._id)}
+                            disabled={deleteLoading}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -854,297 +899,225 @@ const AdminEvents: React.FC = () => {
       >
         <Stack spacing={2} alignItems="center">
           <CircularProgress color="inherit" />
-          <Typography color="inherit">Loading events...</Typography>
+          <Typography color="inherit">{t("admin.loading")}</Typography>
         </Stack>
       </Backdrop>
 
       {/* Create Event Dialog */}
       <Dialog
-        open={openCreate}
-        onClose={handleCloseCreate}
-        maxWidth="sm"
+        open={openCreate || openEdit}
+        onClose={handleCloseDialog}
+        maxWidth="md"
         fullWidth
+        keepMounted={false}
+        disablePortal={false}
+        aria-labelledby="event-dialog-title"
       >
-        <DialogTitle>Create New Event</DialogTitle>
-        <form onSubmit={handleCreate} encType="multipart/form-data">
-          <DialogContent>
-            <Stack spacing={2}>
-              <TextField
-                label="Title"
-                name="title"
-                value={form.title}
-                onChange={handleFormChange}
-                required
-                fullWidth
-              />
-              <TextField
-                label="Description"
-                name="description"
-                value={form.description}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                multiline
-                minRows={2}
-              />
-              <TextField
-                label="Date"
-                name="date"
-                type="date"
-                value={form.date}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
-              <TextField
-                label="Location"
-                name="location"
-                value={form.location}
-                onChange={handleFormChange}
-                required
-                fullWidth
-              />
-              <TextField
-                label="Price"
-                name="price"
-                type="number"
-                value={form.price}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                inputProps={{ min: 0 }}
-              />
-              <TextField
-                select
-                label="Category"
-                name="category"
-                value={form.category}
-                onChange={handleFormChange}
-                required
-                fullWidth
-              >
-                {CATEGORY_OPTIONS.map((cat) => (
-                  <MenuItem key={cat} value={cat}>
-                    {cat}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                label="Capacity"
-                name="capacity"
-                type="number"
-                value={form.capacity}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                inputProps={{ min: 1 }}
-              />
-              <TextField
-                label="Available Tickets"
-                name="availableTickets"
-                type="number"
-                value={form.availableTickets}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                inputProps={{ min: 0, max: form.capacity || undefined }}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={form.isActive}
-                    onChange={handleFormChange}
-                    name="isActive"
+        <DialogTitle id="event-dialog-title">
+          {openCreate ? t("admin.createEvent") : t("admin.editEvent")}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label={t("events.title")}
+              name="title"
+              value={form.title}
+              onChange={handleFormChange}
+              error={Boolean(createError || editError)}
+              helperText={createError || editError}
+            />
+            <TextField
+              fullWidth
+              label={t("events.description")}
+              name="description"
+              value={form.description}
+              onChange={handleFormChange}
+              multiline
+              rows={4}
+            />
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    label={t("events.date")}
+                    value={form.date ? new Date(form.date) : null}
+                    onChange={(date) =>
+                      handleFormChange({
+                        target: {
+                          name: "date",
+                          value: date?.toISOString() || "",
+                        },
+                      } as any)
+                    }
+                    slotProps={{ textField: { fullWidth: true } }}
                   />
-                }
-                label="Active"
-              />
-              <Box>
-                <Button variant="outlined" component="label" fullWidth>
-                  Upload Image
-                  <input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                    hidden
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label={t("events.location")}
+                  name="location"
+                  value={form.location}
+                  onChange={handleFormChange}
+                />
+              </Grid>
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label={t("events.price")}
+                  name="price"
+                  type="number"
+                  value={form.price}
+                  onChange={handleFormChange}
+                  InputProps={{
+                    startAdornment: <Typography>$</Typography>,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>{t("events.category")}</InputLabel>
+                  <Select
+                    name="category"
+                    value={form.category}
+                    label={t("events.category")}
                     onChange={handleFormChange}
-                  />
+                  >
+                    {CATEGORY_OPTIONS.map((category) => (
+                      <MenuItem key={category} value={category}>
+                        {t(`events.categories.${category}`) !==
+                        `events.categories.${category}`
+                          ? t(`events.categories.${category}`)
+                          : category}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label={t("events.capacity")}
+                  name="capacity"
+                  type="number"
+                  value={form.capacity}
+                  onChange={handleFormChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label={t("events.availableTickets")}
+                  name="availableTickets"
+                  type="number"
+                  value={form.availableTickets}
+                  onChange={handleFormChange}
+                />
+              </Grid>
+            </Grid>
+            <Box>
+              <input
+                accept="image/*"
+                type="file"
+                id="event-image"
+                name="image"
+                hidden
+                onChange={handleFormChange}
+              />
+              <label htmlFor="event-image">
+                <Button variant="outlined" component="span" startIcon={<Add />}>
+                  {t("admin.uploadImage")}
                 </Button>
-                {imagePreview && (
-                  <Card sx={{ mt: 2 }}>
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={imagePreview}
-                      alt="Event preview"
-                      sx={{ objectFit: "contain" }}
-                    />
-                  </Card>
-                )}
-              </Box>
-              {createError && <Alert severity="error">{createError}</Alert>}
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseCreate} disabled={createLoading}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={createLoading}
-            >
-              {createLoading ? <CircularProgress size={24} /> : "Create"}
-            </Button>
-          </DialogActions>
-        </form>
+              </label>
+              {imagePreview && (
+                <Box
+                  component="img"
+                  src={imagePreview}
+                  alt="Preview"
+                  sx={{
+                    mt: 2,
+                    maxWidth: "100%",
+                    maxHeight: 200,
+                    objectFit: "contain",
+                  }}
+                />
+              )}
+            </Box>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.isActive}
+                  onChange={handleFormChange}
+                  name="isActive"
+                />
+              }
+              label={t("admin.active")}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="inherit">
+            {t("admin.cancel")}
+          </Button>
+          <Button
+            onClick={openCreate ? handleCreate : handleEdit}
+            variant="contained"
+            disabled={createLoading || editLoading}
+            color="primary"
+          >
+            {createLoading || editLoading ? (
+              <CircularProgress size={24} />
+            ) : openCreate ? (
+              t("admin.create")
+            ) : (
+              t("admin.save")
+            )}
+          </Button>
+        </DialogActions>
       </Dialog>
-      {/* Edit Event Dialog */}
-      <Dialog open={openEdit} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit Event</DialogTitle>
-        <form onSubmit={handleEdit} encType="multipart/form-data">
-          <DialogContent>
-            <Stack spacing={2}>
-              <TextField
-                label="Title"
-                name="title"
-                value={form.title}
-                onChange={handleFormChange}
-                required
-                fullWidth
-              />
-              <TextField
-                label="Description"
-                name="description"
-                value={form.description}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                multiline
-                minRows={2}
-              />
-              <TextField
-                label="Date"
-                name="date"
-                type="date"
-                value={form.date}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
-              <TextField
-                label="Location"
-                name="location"
-                value={form.location}
-                onChange={handleFormChange}
-                required
-                fullWidth
-              />
-              <TextField
-                label="Price"
-                name="price"
-                type="number"
-                value={form.price}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                inputProps={{ min: 0 }}
-              />
-              <TextField
-                select
-                label="Category"
-                name="category"
-                value={form.category}
-                onChange={handleFormChange}
-                required
-                fullWidth
-              >
-                {CATEGORY_OPTIONS.map((cat) => (
-                  <MenuItem key={cat} value={cat}>
-                    {cat}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                label="Capacity"
-                name="capacity"
-                type="number"
-                value={form.capacity}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                inputProps={{ min: 1 }}
-              />
-              <TextField
-                label="Available Tickets"
-                name="availableTickets"
-                type="number"
-                value={form.availableTickets}
-                onChange={handleFormChange}
-                required
-                fullWidth
-                inputProps={{ min: 0, max: form.capacity || undefined }}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={form.isActive}
-                    onChange={handleFormChange}
-                    name="isActive"
-                  />
-                }
-                label="Active"
-              />
-              <Box>
-                <Button variant="outlined" component="label" fullWidth>
-                  Upload Image
-                  <input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                    hidden
-                    onChange={handleFormChange}
-                  />
-                </Button>
-                {imagePreview && (
-                  <Card sx={{ mt: 2 }}>
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={imagePreview}
-                      alt="Event preview"
-                      sx={{ objectFit: "contain" }}
-                    />
-                  </Card>
-                )}
-              </Box>
-              {editError && <Alert severity="error">{editError}</Alert>}
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseEdit} disabled={editLoading}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={editLoading}
-            >
-              {editLoading ? <CircularProgress size={24} /> : "Update"}
-            </Button>
-          </DialogActions>
-        </form>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={Boolean(deleteDialog)}
+        onClose={() => setDeleteDialog(null)}
+        aria-labelledby="delete-dialog-title"
+        keepMounted={false}
+        disablePortal={false}
+      >
+        <DialogTitle id="delete-dialog-title">
+          {t("admin.confirmDelete")}
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            {t("admin.deleteEventConfirm", { title: deleteDialog?.title })}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog(null)} color="inherit">
+            {t("admin.cancel")}
+          </Button>
+          <Button
+            onClick={() => handleConfirmDelete(deleteDialog?._id || "")}
+            color="error"
+            variant="contained"
+            disabled={deleteLoading}
+          >
+            {deleteLoading ? <CircularProgress size={24} /> : t("admin.delete")}
+          </Button>
+        </DialogActions>
       </Dialog>
-      {/* Add Snackbar at the end of the component */}
+
+      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}

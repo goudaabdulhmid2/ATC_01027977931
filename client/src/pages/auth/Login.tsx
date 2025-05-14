@@ -18,12 +18,14 @@ import {
   Stepper,
   Step,
   StepLabel,
+  Grid,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { login, clearError } from "../../store/slices/authSlice";
 import { RootState, AppDispatch } from "../../store";
 import api from "../../utils/axios";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -49,6 +51,7 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState("");
   const [passwordConfirm, setpasswordConfirm] = useState("");
   const [hasNavigated, setHasNavigated] = useState(false);
+  const { t } = useTranslation();
 
   const from = (location.state as any)?.from?.pathname || "/";
 
@@ -181,7 +184,7 @@ const Login = () => {
           }}
         >
           <Typography component="h1" variant="h5">
-            Sign in
+            {t("auth.signIn")}
           </Typography>
           <Box
             component="form"
@@ -193,7 +196,7 @@ const Login = () => {
               fullWidth
               id="email"
               name="email"
-              label="Email Address"
+              label={t("auth.email")}
               autoComplete="email"
               autoFocus
               value={formik.values.email}
@@ -205,7 +208,7 @@ const Login = () => {
               margin="normal"
               fullWidth
               name="password"
-              label="Password"
+              label={t("auth.password")}
               type="password"
               id="password"
               autoComplete="current-password"
@@ -226,7 +229,7 @@ const Login = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : "Sign In"}
+              {loading ? t("common.loading") : t("auth.signIn")}
             </Button>
             <Box
               sx={{
@@ -241,10 +244,10 @@ const Login = () => {
                 onClick={() => setForgotPasswordOpen(true)}
                 sx={{ textAlign: "left" }}
               >
-                Forgot password?
+                {t("auth.forgotPassword")}
               </Link>
               <Link component={RouterLink} to="/register" variant="body2">
-                {"Don't have an account? Sign Up"}
+                {t("auth.dontHaveAccount")}
               </Link>
             </Box>
           </Box>
@@ -258,30 +261,30 @@ const Login = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Reset Password</DialogTitle>
+        <DialogTitle>{t("auth.resetPassword")}</DialogTitle>
         <DialogContent>
           <Stepper activeStep={resetStep - 1} sx={{ mb: 3, mt: 2 }}>
             <Step>
-              <StepLabel>Request Reset</StepLabel>
+              <StepLabel>{t("auth.requestReset")}</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Verify Code</StepLabel>
+              <StepLabel>{t("auth.verifyCode")}</StepLabel>
             </Step>
             <Step>
-              <StepLabel>New Password</StepLabel>
+              <StepLabel>{t("auth.newPassword")}</StepLabel>
             </Step>
           </Stepper>
 
           {resetStep === 1 && (
             <>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                Enter your email address and we'll send you a reset code.
+                {t("auth.enterEmail")}
               </Typography>
               <TextField
                 autoFocus
                 margin="dense"
                 id="forgot-email"
-                label="Email Address"
+                label={t("auth.email")}
                 type="email"
                 fullWidth
                 variant="outlined"
@@ -294,13 +297,13 @@ const Login = () => {
           {resetStep === 2 && (
             <>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                Enter the reset code sent to your email.
+                {t("auth.enterResetCode")}
               </Typography>
               <TextField
                 autoFocus
                 margin="dense"
                 id="reset-code"
-                label="Reset Code"
+                label={t("auth.resetCode")}
                 fullWidth
                 variant="outlined"
                 value={resetCode}
@@ -312,12 +315,12 @@ const Login = () => {
           {resetStep === 3 && (
             <>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                Enter your new password.
+                {t("auth.enterNewPassword")}
               </Typography>
               <TextField
                 margin="dense"
                 id="new-password"
-                label="New Password"
+                label={t("auth.newPassword")}
                 type="password"
                 fullWidth
                 variant="outlined"
@@ -328,7 +331,7 @@ const Login = () => {
               <TextField
                 margin="dense"
                 id="confirm-password"
-                label="Confirm Password"
+                label={t("auth.confirmPassword")}
                 type="password"
                 fullWidth
                 variant="outlined"
@@ -339,7 +342,7 @@ const Login = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleCloseDialog}>{t("common.cancel")}</Button>
           {resetStep === 1 && (
             <Button
               onClick={handleForgotPassword}
@@ -348,7 +351,7 @@ const Login = () => {
               {forgotPasswordLoading ? (
                 <CircularProgress size={24} />
               ) : (
-                "Send Reset Code"
+                t("auth.sendResetCode")
               )}
             </Button>
           )}
@@ -360,7 +363,7 @@ const Login = () => {
               {forgotPasswordLoading ? (
                 <CircularProgress size={24} />
               ) : (
-                "Verify Code"
+                t("auth.verifyCode")
               )}
             </Button>
           )}
@@ -374,7 +377,7 @@ const Login = () => {
               {forgotPasswordLoading ? (
                 <CircularProgress size={24} />
               ) : (
-                "Reset Password"
+                t("auth.resetPassword")
               )}
             </Button>
           )}

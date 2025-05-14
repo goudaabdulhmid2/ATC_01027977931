@@ -29,6 +29,7 @@ import {
 } from "@mui/material";
 import { Edit, Delete, CheckCircle, Cancel } from "@mui/icons-material";
 import api from "../../utils/axios";
+import { useTranslation } from "react-i18next";
 
 interface User {
   _id: string;
@@ -41,6 +42,7 @@ interface User {
 const ROLE_OPTIONS = ["admin", "user"];
 
 const AdminUsers: React.FC = () => {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +108,14 @@ const AdminUsers: React.FC = () => {
 
   const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(Number(e.target.value));
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setRoleFilter("");
+    setStatusFilter("");
+    setRowsPerPage(10);
     setPage(1);
   };
 
@@ -249,56 +259,74 @@ const AdminUsers: React.FC = () => {
         mb={3}
       >
         <Typography variant="h5" component="h1" gutterBottom>
-          User Management
+          {t("admin.manageUsers")}
         </Typography>
         <Stack direction="row" spacing={2}>
-          <TextField
-            label="Search"
-            value={search}
-            onChange={handleSearchChange}
-            size="small"
-          />
-          <TextField
-            select
-            label="Role"
-            value={roleFilter}
-            onChange={handleRoleFilterChange}
-            size="small"
-            sx={{ minWidth: 120 }}
+          {/* Filters Section */}
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            flexWrap="wrap"
+            mb={3}
           >
-            <MenuItem value="">All Roles</MenuItem>
-            {ROLE_OPTIONS.map((role) => (
-              <MenuItem key={role} value={role}>
-                {role.charAt(0).toUpperCase() + role.slice(1)}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            select
-            label="Status"
-            value={statusFilter}
-            onChange={handleStatusFilterChange}
-            size="small"
-            sx={{ minWidth: 120 }}
-          >
-            <MenuItem value="">All Status</MenuItem>
-            <MenuItem value="active">Active</MenuItem>
-            <MenuItem value="inactive">Inactive</MenuItem>
-          </TextField>
-          <TextField
-            select
-            label="Rows"
-            value={rowsPerPage.toString()}
-            onChange={handleRowsPerPageChange}
-            size="small"
-            sx={{ minWidth: 80 }}
-          >
-            {[5, 10, 20, 50].map((n) => (
-              <MenuItem key={n} value={n.toString()}>
-                {n}
-              </MenuItem>
-            ))}
-          </TextField>
+            <TextField
+              label={t("admin.search")}
+              value={search}
+              onChange={handleSearchChange}
+              size="small"
+              sx={{ minWidth: 180, maxWidth: 220, flex: "1 1 180px" }}
+            />
+            <TextField
+              select
+              label={t("admin.role", "Role")}
+              value={roleFilter}
+              onChange={handleRoleFilterChange}
+              size="small"
+              sx={{ minWidth: 120, maxWidth: 150, flex: "1 1 120px" }}
+            >
+              <MenuItem value="">{t("admin.all")}</MenuItem>
+              {ROLE_OPTIONS.map((role) => (
+                <MenuItem key={role} value={role}>
+                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label={t("admin.status")}
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+              size="small"
+              sx={{ minWidth: 120, maxWidth: 150, flex: "1 1 120px" }}
+            >
+              <MenuItem value="">{t("admin.all")}</MenuItem>
+              <MenuItem value="active">{t("admin.active")}</MenuItem>
+              <MenuItem value="inactive">{t("admin.inactive")}</MenuItem>
+            </TextField>
+            <TextField
+              select
+              label={t("admin.rows")}
+              value={rowsPerPage}
+              onChange={handleRowsPerPageChange}
+              size="small"
+              sx={{ minWidth: 90, maxWidth: 120, flex: "1 1 90px" }}
+            >
+              {[5, 10, 25, 50].map((n) => (
+                <MenuItem key={n} value={n}>
+                  {n}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleResetFilters}
+              sx={{ height: 40, minWidth: 120 }}
+            >
+              {t("admin.resetFilters", "Reset Filters")}
+            </Button>
+          </Stack>
         </Stack>
       </Stack>
       {error && (
@@ -310,11 +338,11 @@ const AdminUsers: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>{t("auth.name")}</TableCell>
+              <TableCell>{t("auth.email")}</TableCell>
+              <TableCell>{t("admin.role", "Role")}</TableCell>
+              <TableCell>{t("admin.status")}</TableCell>
+              <TableCell align="right">{t("admin.actions")}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -328,7 +356,7 @@ const AdminUsers: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={5} align="center">
                   <Typography color="text.secondary">
-                    No users found.
+                    {t("admin.noData")}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -339,14 +367,16 @@ const AdminUsers: React.FC = () => {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <Chip
-                      label={user.role}
+                      label={t(`admin.roles.${user.role}`)}
                       color={user.role === "admin" ? "primary" : "default"}
                       size="small"
                     />
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={user.active ? "Active" : "Inactive"}
+                      label={
+                        user.active ? t("admin.active") : t("admin.inactive")
+                      }
                       color={user.active ? "success" : "default"}
                       size="small"
                     />
@@ -357,7 +387,7 @@ const AdminUsers: React.FC = () => {
                       spacing={1}
                       justifyContent="flex-end"
                     >
-                      <Tooltip title="Edit User">
+                      <Tooltip title={t("admin.edit")}>
                         <IconButton
                           color="primary"
                           size="small"
@@ -366,7 +396,13 @@ const AdminUsers: React.FC = () => {
                           <Edit />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title={user.active ? "Deactivate" : "Activate"}>
+                      <Tooltip
+                        title={
+                          user.active
+                            ? t("admin.deactivate")
+                            : t("admin.activate")
+                        }
+                      >
                         <IconButton
                           color={user.active ? "success" : "default"}
                           size="small"
@@ -376,7 +412,7 @@ const AdminUsers: React.FC = () => {
                           {user.active ? <Cancel /> : <CheckCircle />}
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Delete User">
+                      <Tooltip title={t("admin.delete")}>
                         <IconButton
                           color="error"
                           size="small"
@@ -406,41 +442,38 @@ const AdminUsers: React.FC = () => {
       <Dialog
         open={editDialog}
         onClose={handleCloseEdit}
-        maxWidth="xs"
+        maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Edit User</DialogTitle>
+        <DialogTitle>{t("admin.editUser")}</DialogTitle>
         <form onSubmit={handleEditSubmit}>
           <DialogContent>
-            <Stack spacing={2}>
+            <Stack spacing={2} sx={{ mt: 2 }}>
               <TextField
-                label="Name"
+                fullWidth
+                label={t("auth.name")}
                 name="name"
                 value={editForm.name}
                 onChange={handleEditFormChange}
-                fullWidth
-                required
               />
               <TextField
-                label="Email"
+                fullWidth
+                label={t("auth.email")}
                 name="email"
                 value={editForm.email}
                 onChange={handleEditFormChange}
-                fullWidth
-                required
               />
               <TextField
                 select
-                label="Role"
+                fullWidth
+                label={t("admin.role")}
                 name="role"
                 value={editForm.role}
                 onChange={handleEditFormChange}
-                fullWidth
-                required
               >
                 {ROLE_OPTIONS.map((role) => (
                   <MenuItem key={role} value={role}>
-                    {role.charAt(0).toUpperCase() + role.slice(1)}
+                    {t(`admin.roles.${role}`)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -452,21 +485,14 @@ const AdminUsers: React.FC = () => {
                     name="active"
                   />
                 }
-                label="Active"
+                label={t("admin.active")}
               />
             </Stack>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseEdit} disabled={editLoading}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={editLoading}
-            >
-              {editLoading ? <CircularProgress size={24} /> : "Save"}
+            <Button onClick={handleCloseEdit}>{t("admin.cancel")}</Button>
+            <Button type="submit" variant="contained" disabled={editLoading}>
+              {editLoading ? <CircularProgress size={24} /> : t("admin.save")}
             </Button>
           </DialogActions>
         </form>
@@ -493,15 +519,15 @@ const AdminUsers: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>{t("admin.confirmDelete")}</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete user "{confirmDialog.userName}"?
+            {t("admin.deleteUserConfirm", { name: confirmDialog.userName })}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelDelete} disabled={deleteLoading}>
-            Cancel
+            {t("admin.cancel")}
           </Button>
           <Button
             onClick={handleConfirmDelete}
@@ -509,7 +535,7 @@ const AdminUsers: React.FC = () => {
             variant="contained"
             disabled={deleteLoading}
           >
-            {deleteLoading ? <CircularProgress size={24} /> : "Delete"}
+            {deleteLoading ? <CircularProgress size={24} /> : t("admin.delete")}
           </Button>
         </DialogActions>
       </Dialog>

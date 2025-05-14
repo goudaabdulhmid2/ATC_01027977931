@@ -12,8 +12,8 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../store";
 import { logout } from "../store/slices/authSlice";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { Brightness4, Brightness7 } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 
 interface NavBarProps {
   mode: string;
@@ -24,10 +24,15 @@ const NavBar: React.FC<NavBarProps> = ({ mode, toggleMode }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
+  };
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
   };
 
   return (
@@ -48,27 +53,33 @@ const NavBar: React.FC<NavBarProps> = ({ mode, toggleMode }) => {
             Eventify
           </Typography>
           <Button component={RouterLink} to="/events" color="inherit">
-            Events
+            {t("common.events")}
           </Button>
           {user && (
             <Button component={RouterLink} to="/my-bookings" color="inherit">
-              My Bookings
+              {t("common.bookings")}
             </Button>
           )}
           {user && (
             <Button component={RouterLink} to="/profile" color="inherit">
-              Profile
+              {t("common.profile")}
             </Button>
           )}
           {user?.role === "admin" && (
             <Button component={RouterLink} to="/admin" color="inherit">
-              Admin Dashboard
+              {t("common.admin")}
             </Button>
           )}
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <IconButton onClick={toggleMode} color="inherit">
-            {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+          <Button color="inherit" onClick={() => changeLanguage("en")}>
+            EN
+          </Button>
+          <Button color="inherit" onClick={() => changeLanguage("ar")}>
+            AR
+          </Button>
+          <IconButton color="inherit" onClick={toggleMode}>
+            {mode === "dark" ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
           <Typography
             variant="body2"
@@ -85,7 +96,7 @@ const NavBar: React.FC<NavBarProps> = ({ mode, toggleMode }) => {
                 color="primary"
                 variant="outlined"
               >
-                Log In
+                {t("auth.signIn")}
               </Button>
               <Button
                 component={RouterLink}
@@ -93,7 +104,7 @@ const NavBar: React.FC<NavBarProps> = ({ mode, toggleMode }) => {
                 color="primary"
                 variant="contained"
               >
-                Sign Up
+                {t("auth.signUp")}
               </Button>
             </>
           ) : (
@@ -104,7 +115,7 @@ const NavBar: React.FC<NavBarProps> = ({ mode, toggleMode }) => {
                 </Avatar>
               </IconButton>
               <Button color="inherit" onClick={handleLogout}>
-                Logout
+                {t("common.logout")}
               </Button>
             </>
           )}

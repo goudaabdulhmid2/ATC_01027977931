@@ -1,0 +1,12 @@
+{
+  "welcome": "Bienvenido",
+  "login": "Iniciar Sesión",
+  "register": "Registrarse",
+  "profile": "Perfil",
+  "logout": "Cerrar Sesión",
+  "events": "Eventos",
+  "bookings": "Mis Reservas",
+  "admin": "Panel de Administración",
+  "error": "Algo salió mal.",
+  "reload": "Recargar Página"
+}

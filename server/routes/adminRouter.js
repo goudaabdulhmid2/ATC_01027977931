@@ -27,17 +27,17 @@ router.get(
 );
 router.post(
   '/events',
-  eventValidator.createEventValidator,
   eventController.uploadEventImage,
   eventController.resizeEventImage,
   eventController.assaignCreator,
+  eventValidator.createEventValidator,
   eventController.createEvent,
 );
 router.patch(
   '/events/:id',
-  eventValidator.updateEventValidator,
   eventController.uploadEventImage,
   eventController.resizeEventImage,
+  eventValidator.updateEventValidator,
   eventController.updateEvent,
 );
 router.delete(
@@ -55,16 +55,17 @@ router.get(
 );
 router.post(
   '/users',
-  userValidator.createUserValidator,
   userController.uploadProfileImage,
   userController.resizeProfileImage,
+  userValidator.createUserValidator,
   userController.creatUser,
 );
 router.patch(
   '/users/:id',
-  userValidator.updateUserValidator,
   userController.uploadProfileImage,
   userController.resizeProfileImage,
+  userValidator.updateUserValidator,
+
   userController.updateUser,
 );
 router.delete(
