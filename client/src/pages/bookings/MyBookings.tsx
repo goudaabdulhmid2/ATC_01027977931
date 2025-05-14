@@ -111,14 +111,16 @@ const MyBookings: React.FC = () => {
       const booking = bookings.find((b) => b._id === bookingId);
       await api.patch(`/bookings/${bookingId}/cancel`);
       setSuccessMessage({
-        title: "Booking Cancelled",
-        message: "Your booking has been successfully cancelled.",
-        details: `Booking for ${booking?.event.title} has been cancelled.`,
+        title: t("bookings.bookingCancelledTitle"),
+        message: t("bookings.bookingCancelledMessage"),
+        details: t("bookings.bookingCancelledDetails", {
+          event: booking?.event.title,
+        }),
       });
       setShowSuccessDialog(true);
       fetchBookings();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to cancel booking");
+      toast.error(err.response?.data?.message || t("bookings.failedCancel"));
     } finally {
       setCancelLoading(null);
     }
@@ -139,15 +141,18 @@ const MyBookings: React.FC = () => {
         quantity: editQuantity,
       });
       setSuccessMessage({
-        title: "Booking Updated",
-        message: "Your booking has been successfully updated.",
-        details: `Booking for ${selectedBooking.event.title} has been updated to ${editQuantity} ticket(s).`,
+        title: t("bookings.bookingUpdatedTitle"),
+        message: t("bookings.bookingUpdatedMessage"),
+        details: t("bookings.bookingUpdatedDetails", {
+          event: selectedBooking.event.title,
+          count: editQuantity,
+        }),
       });
       setShowSuccessDialog(true);
       setDialogOpen(false);
       fetchBookings();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update booking");
+      toast.error(err.response?.data?.message || t("bookings.failedUpdate"));
     } finally {
       setEditLoading(false);
       setEditId(null);
@@ -329,7 +334,7 @@ const MyBookings: React.FC = () => {
           <Typography variant="body1" paragraph>
             {successMessage?.message}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" paragraph>
             {successMessage?.details}
           </Typography>
         </DialogContent>

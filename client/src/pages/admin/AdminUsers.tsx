@@ -174,14 +174,14 @@ const AdminUsers: React.FC = () => {
       );
       setSnackbar({
         open: true,
-        message: `User "${editForm.name}" updated successfully!`,
+        message: t("admin.userUpdated", { name: editForm.name }),
         severity: "success",
       });
       setEditDialog(false);
     } catch (err: any) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to update user",
+        message: err.response?.data?.message || t("admin.errorUpdatingUser"),
         severity: "error",
       });
     } finally {
@@ -200,15 +200,15 @@ const AdminUsers: React.FC = () => {
       );
       setSnackbar({
         open: true,
-        message: `User "${user.name}" ${
-          !user.active ? "activated" : "deactivated"
-        } successfully!`,
+        message: !user.active
+          ? t("admin.userActivated", { name: user.name })
+          : t("admin.userDeactivated", { name: user.name }),
         severity: "success",
       });
     } catch (err: any) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to update user status",
+        message: err.response?.data?.message || t("admin.errorUpdatingUser"),
         severity: "error",
       });
     } finally {
@@ -227,14 +227,14 @@ const AdminUsers: React.FC = () => {
       setUsers((prev) => prev.filter((u) => u._id !== confirmDialog.userId));
       setSnackbar({
         open: true,
-        message: `User "${confirmDialog.userName}" deleted successfully!`,
+        message: t("admin.userDeleted", { name: confirmDialog.userName }),
         severity: "success",
       });
       setConfirmDialog({ open: false, userId: "", userName: "" });
     } catch (err: any) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to delete user",
+        message: err.response?.data?.message || t("admin.errorDeletingUser"),
         severity: "error",
       });
     } finally {

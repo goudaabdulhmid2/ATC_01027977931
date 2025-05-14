@@ -28,6 +28,7 @@ import {
 import { Cancel, Visibility, Edit, Delete } from "@mui/icons-material";
 import api from "../../utils/axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { useTranslation } from "react-i18next";
 
 interface Booking {
   _id: string;
@@ -47,6 +48,7 @@ interface EventOption {
 const STATUS_OPTIONS = ["pending", "confirmed", "cancelled"];
 
 const AdminBookings: React.FC = () => {
+  const { t } = useTranslation();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -180,14 +182,14 @@ const AdminBookings: React.FC = () => {
       );
       setSnackbar({
         open: true,
-        message: "Booking cancelled!",
+        message: t("bookings.bookingCancelled"),
         severity: "success",
       });
       setCancelDialog(false);
     } catch (err: any) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to cancel booking",
+        message: err.response?.data?.message || t("bookings.failedCancel"),
         severity: "error",
       });
     } finally {
@@ -221,7 +223,7 @@ const AdminBookings: React.FC = () => {
     if (editForm.quantity < 1) {
       setSnackbar({
         open: true,
-        message: "Quantity must be at least 1",
+        message: t("bookings.quantityMin"),
         severity: "error",
       });
       return;
@@ -239,14 +241,14 @@ const AdminBookings: React.FC = () => {
       );
       setSnackbar({
         open: true,
-        message: "Booking updated!",
+        message: t("bookings.bookingUpdated"),
         severity: "success",
       });
       setEditDialog(false);
     } catch (err: any) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to update booking",
+        message: err.response?.data?.message || t("bookings.failedUpdate"),
         severity: "error",
       });
     } finally {
@@ -270,14 +272,14 @@ const AdminBookings: React.FC = () => {
       setBookings((prev) => prev.filter((b) => b._id !== deleteBookingId));
       setSnackbar({
         open: true,
-        message: "Booking deleted!",
+        message: t("bookings.bookingDeleted"),
         severity: "success",
       });
       setDeleteDialog(false);
     } catch (err: any) {
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to delete booking",
+        message: err.response?.data?.message || t("bookings.failedDelete"),
         severity: "error",
       });
     } finally {
@@ -304,39 +306,39 @@ const AdminBookings: React.FC = () => {
         mb={3}
       >
         <Typography variant="h5" component="h1" gutterBottom>
-          Booking Management
+          {t("admin.bookingManagement")}
         </Typography>
         <Stack direction="row" spacing={2}>
           <TextField
-            label="Search"
+            label={t("common.search")}
             value={search}
             onChange={handleSearchChange}
             size="small"
           />
           <TextField
             select
-            label="Status"
+            label={t("admin.status")}
             value={statusFilter}
             onChange={handleStatusFilterChange}
             size="small"
             sx={{ minWidth: 120 }}
           >
-            <MenuItem value="">All</MenuItem>
+            <MenuItem value="">{t("admin.all")}</MenuItem>
             {STATUS_OPTIONS.map((status) => (
               <MenuItem key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {t(`bookings.${status}`)}
               </MenuItem>
             ))}
           </TextField>
           <TextField
             select
-            label="Event"
+            label={t("admin.event")}
             value={eventFilter}
             onChange={handleEventFilterChange}
             size="small"
             sx={{ minWidth: 140 }}
           >
-            <MenuItem value="">All Events</MenuItem>
+            <MenuItem value="">{t("admin.allEvents")}</MenuItem>
             {eventOptions.map((event) => (
               <MenuItem key={event._id} value={event._id}>
                 {event.title}
@@ -344,20 +346,20 @@ const AdminBookings: React.FC = () => {
             ))}
           </TextField>
           <DatePicker
-            label="From"
+            label={t("admin.from")}
             value={dateFrom}
             onChange={handleDateFromChange}
             slotProps={{ textField: { size: "small" } }}
           />
           <DatePicker
-            label="To"
+            label={t("admin.to")}
             value={dateTo}
             onChange={handleDateToChange}
             slotProps={{ textField: { size: "small" } }}
           />
           <TextField
             select
-            label="Rows"
+            label={t("admin.rows")}
             value={rowsPerPage}
             onChange={handleRowsPerPageChange}
             size="small"
@@ -374,7 +376,7 @@ const AdminBookings: React.FC = () => {
             color="secondary"
             onClick={handleResetFilters}
           >
-            Reset Filters
+            {t("admin.resetFilters")}
           </Button>
         </Stack>
       </Stack>
@@ -387,13 +389,30 @@ const AdminBookings: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>User</TableCell>
-              <TableCell>Event</TableCell>
-              <TableCell>Quantity</TableCell>
-              <TableCell>Total Price</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("admin.user")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("admin.event")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("admin.quantity")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("admin.totalPrice")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("admin.status")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("admin.date")}
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", verticalAlign: "middle" }}
+              >
+                {t("admin.actions")}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -407,7 +426,7 @@ const AdminBookings: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={7} align="center">
                   <Typography color="text.secondary">
-                    No bookings found.
+                    {t("bookings.noBookingsFound")}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -420,7 +439,10 @@ const AdminBookings: React.FC = () => {
                   <TableCell>${booking.totalPrice.toLocaleString()}</TableCell>
                   <TableCell>
                     <Chip
-                      label={booking.status}
+                      label={
+                        t(`bookings.statuses.${booking.status}`) ||
+                        booking.status
+                      }
                       color={
                         booking.status === "confirmed"
                           ? "success"
@@ -434,13 +456,9 @@ const AdminBookings: React.FC = () => {
                   <TableCell>
                     {new Date(booking.bookingDate).toLocaleDateString()}
                   </TableCell>
-                  <TableCell align="right">
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      justifyContent="flex-end"
-                    >
-                      <Tooltip title="View Details">
+                  <TableCell align="center">
+                    <Stack direction="row" spacing={1} justifyContent="center">
+                      <Tooltip title={t("bookings.bookingDetails")}>
                         <IconButton
                           color="primary"
                           size="small"
@@ -449,7 +467,7 @@ const AdminBookings: React.FC = () => {
                           <Visibility />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Edit Booking">
+                      <Tooltip title={t("bookings.editBooking")}>
                         <IconButton
                           color="info"
                           size="small"
@@ -459,7 +477,7 @@ const AdminBookings: React.FC = () => {
                         </IconButton>
                       </Tooltip>
                       {booking.status !== "cancelled" && (
-                        <Tooltip title="Cancel Booking">
+                        <Tooltip title={t("bookings.cancelBooking")}>
                           <IconButton
                             color="error"
                             size="small"
@@ -469,7 +487,7 @@ const AdminBookings: React.FC = () => {
                           </IconButton>
                         </Tooltip>
                       )}
-                      <Tooltip title="Delete Booking">
+                      <Tooltip title={t("bookings.deleteBooking")}>
                         <IconButton
                           color="error"
                           size="small"
@@ -501,13 +519,13 @@ const AdminBookings: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Cancel Booking</DialogTitle>
+        <DialogTitle>{t("bookings.deleteBooking")}</DialogTitle>
         <DialogContent>
-          <Typography>Are you sure you want to cancel this booking?</Typography>
+          <Typography>{t("bookings.confirmCancel")}</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseCancel} disabled={cancelLoading}>
-            No
+            {t("common.no")}
           </Button>
           <Button
             onClick={handleCancelBooking}
@@ -515,7 +533,7 @@ const AdminBookings: React.FC = () => {
             variant="contained"
             disabled={cancelLoading}
           >
-            {cancelLoading ? <CircularProgress size={24} /> : "Yes, Cancel"}
+            {cancelLoading ? <CircularProgress size={24} /> : t("common.yes")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -526,31 +544,32 @@ const AdminBookings: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Booking Details</DialogTitle>
+        <DialogTitle>{t("bookings.bookingDetails")}</DialogTitle>
         <DialogContent dividers>
           {detailsBooking && (
             <Stack spacing={2}>
               <Typography>
-                <b>User:</b> {detailsBooking.user?.name || "-"}{" "}
+                <b>{t("admin.user")}:</b> {detailsBooking.user?.name || "-"}
                 {detailsBooking.user?.email
-                  ? `(${detailsBooking.user.email})`
+                  ? ` (${detailsBooking.user.email})`
                   : ""}
               </Typography>
               <Typography>
-                <b>Event:</b> {detailsBooking.event?.title || "-"}
+                <b>{t("admin.event")}:</b> {detailsBooking.event?.title || "-"}
               </Typography>
               <Typography>
-                <b>Quantity:</b> {detailsBooking.quantity}
+                <b>{t("bookings.quantity")}:</b> {detailsBooking.quantity}
               </Typography>
               <Typography>
-                <b>Total Price:</b> $
+                <b>{t("bookings.totalPrice")}:</b> $
                 {detailsBooking.totalPrice.toLocaleString()}
               </Typography>
               <Typography>
-                <b>Status:</b> {detailsBooking.status}
+                <b>{t("bookings.status")}:</b>{" "}
+                {t(`bookings.statuses.${detailsBooking.status}`)}
               </Typography>
               <Typography>
-                <b>Booking Date:</b>{" "}
+                <b>{t("bookings.bookingDate")}:</b>{" "}
                 {new Date(detailsBooking.bookingDate).toLocaleString()}
               </Typography>
             </Stack>
@@ -567,12 +586,12 @@ const AdminBookings: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Edit Booking</DialogTitle>
+        <DialogTitle>{t("bookings.editBooking")}</DialogTitle>
         <form onSubmit={handleEditBooking}>
           <DialogContent>
             <Stack spacing={2}>
               <TextField
-                label="Quantity"
+                label={t("bookings.quantity")}
                 name="quantity"
                 type="number"
                 value={editForm.quantity}
@@ -583,7 +602,7 @@ const AdminBookings: React.FC = () => {
               />
               <TextField
                 select
-                label="Status"
+                label={t("bookings.status")}
                 name="status"
                 value={editForm.status}
                 onChange={handleEditFormChange}
@@ -592,7 +611,7 @@ const AdminBookings: React.FC = () => {
               >
                 {STATUS_OPTIONS.map((status) => (
                   <MenuItem key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                    {t(`bookings.statuses.${status}`)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -600,7 +619,7 @@ const AdminBookings: React.FC = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseEdit} disabled={editLoading}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
@@ -608,7 +627,7 @@ const AdminBookings: React.FC = () => {
               color="primary"
               disabled={editLoading}
             >
-              {editLoading ? <CircularProgress size={24} /> : "Save"}
+              {editLoading ? <CircularProgress size={24} /> : t("common.save")}
             </Button>
           </DialogActions>
         </form>
@@ -620,13 +639,13 @@ const AdminBookings: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Delete Booking</DialogTitle>
+        <DialogTitle>{t("bookings.deleteBooking")}</DialogTitle>
         <DialogContent>
-          <Typography>Are you sure you want to delete this booking?</Typography>
+          <Typography>{t("bookings.confirmCancel")}</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDelete} disabled={deleteLoading}>
-            No
+            {t("common.no")}
           </Button>
           <Button
             onClick={handleDeleteBooking}
@@ -634,7 +653,7 @@ const AdminBookings: React.FC = () => {
             variant="contained"
             disabled={deleteLoading}
           >
-            {deleteLoading ? <CircularProgress size={24} /> : "Yes, Delete"}
+            {deleteLoading ? <CircularProgress size={24} /> : t("common.yes")}
           </Button>
         </DialogActions>
       </Dialog>

@@ -19,6 +19,7 @@ import {
 } from "../../store/slices/eventSlice";
 import { format } from "date-fns";
 import api from "../../utils/axios";
+import { useTranslation } from "react-i18next";
 
 const EventDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +30,7 @@ const EventDetail: React.FC = () => {
   );
   const { user } = useSelector((state: RootState) => state.auth);
   const [bookedEventIds, setBookedEventIds] = useState<string[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (id) {
@@ -82,7 +84,7 @@ const EventDetail: React.FC = () => {
   if (!currentEvent) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="info">Event not found</Alert>
+        <Alert severity="info">{t("events.eventNotFound")}</Alert>
       </Container>
     );
   }
@@ -99,7 +101,7 @@ const EventDetail: React.FC = () => {
             </Typography>
             <Box sx={{ mb: 2 }}>
               <Chip
-                label={currentEvent.category}
+                label={t(`events.categories.${currentEvent.category}`)}
                 color="primary"
                 sx={{ mr: 1 }}
               />
@@ -109,7 +111,9 @@ const EventDetail: React.FC = () => {
                 sx={{ mr: 1 }}
               />
               <Chip
-                label={`${currentEvent.availableTickets} tickets left`}
+                label={t("events.leftTickets", {
+                  count: currentEvent.availableTickets,
+                })}
                 color="info"
               />
             </Box>
@@ -117,12 +121,12 @@ const EventDetail: React.FC = () => {
               {currentEvent.description}
             </Typography>
             <Typography variant="h6" gutterBottom>
-              Event Details
+              {t("events.details")}
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle1" color="text.secondary">
-                  Date & Time
+                  {t("events.dateTime")}
                 </Typography>
                 <Typography variant="body1">
                   {format(new Date(currentEvent.date), "PPP p")}
@@ -130,13 +134,13 @@ const EventDetail: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle1" color="text.secondary">
-                  Venue
+                  {t("events.venue")}
                 </Typography>
                 <Typography variant="body1">{currentEvent.location}</Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle1" color="text.secondary">
-                  Organizer
+                  {t("events.organizer")}
                 </Typography>
                 <Typography variant="body1">
                   {currentEvent.createdBy?.name}
@@ -144,7 +148,7 @@ const EventDetail: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle1" color="text.secondary">
-                  Contact
+                  {t("events.contact")}
                 </Typography>
                 <Typography variant="body1">
                   {currentEvent.createdBy?.email || "N/A"}
@@ -163,17 +167,17 @@ const EventDetail: React.FC = () => {
               }}
             >
               <Typography variant="h6" gutterBottom>
-                Book Tickets
+                {t("events.bookTickets")}
               </Typography>
               <Typography variant="h4" color="primary" gutterBottom>
                 ${currentEvent.price}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                per ticket
+                {t("events.perTicket")}
               </Typography>
               {isBooked ? (
                 <Chip
-                  label="Booked"
+                  label={t("events.booked")}
                   color="success"
                   sx={{ height: 40, width: "100%", mt: 2 }}
                 />
@@ -188,8 +192,8 @@ const EventDetail: React.FC = () => {
                   disabled={currentEvent.availableTickets === 0}
                 >
                   {currentEvent.availableTickets === 0
-                    ? "Sold Out"
-                    : "Book Now"}
+                    ? t("events.soldOut")
+                    : t("events.bookNow")}
                 </Button>
               )}
             </Paper>

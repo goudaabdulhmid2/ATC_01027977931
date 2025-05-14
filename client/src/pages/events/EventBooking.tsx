@@ -20,6 +20,7 @@ import { fetchEventById } from "../../store/slices/eventSlice";
 import { toast } from "react-toastify";
 import api from "../../utils/axios";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useTranslation } from "react-i18next";
 
 const EventBooking: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +32,7 @@ const EventBooking: React.FC = () => {
   const [ticketCount, setTicketCount] = useState(1);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (id) {
@@ -80,7 +82,7 @@ const EventBooking: React.FC = () => {
   if (!currentEvent) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="info">Event not found</Alert>
+        <Alert severity="info">{t("events.eventNotFound")}</Alert>
       </Container>
     );
   }
@@ -89,23 +91,26 @@ const EventBooking: React.FC = () => {
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Book Tickets for {currentEvent.name}
+          {t("eventBooking.bookTicketsFor")}{" "}
+          {currentEvent.title || currentEvent.name}
         </Typography>
 
         <Box sx={{ mt: 4 }}>
           <Typography variant="h6" gutterBottom>
-            Ticket Information
+            {t("eventBooking.ticketInfo")}
           </Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>
-            Price per ticket: ${currentEvent.price}
+            {t("eventBooking.pricePerTicket", { price: currentEvent.price })}
           </Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>
-            Available tickets: {currentEvent.availableTickets}
+            {t("eventBooking.availableTickets", {
+              count: currentEvent.availableTickets,
+            })}
           </Typography>
 
           <TextField
             type="number"
-            label="Number of Tickets"
+            label={t("eventBooking.numberOfTickets")}
             value={ticketCount}
             onChange={(e) =>
               setTicketCount(
@@ -124,7 +129,9 @@ const EventBooking: React.FC = () => {
           />
 
           <Typography variant="h6" sx={{ mt: 4 }}>
-            Total: ${(currentEvent.price * ticketCount).toFixed(2)}
+            {t("eventBooking.total", {
+              total: (currentEvent.price * ticketCount).toFixed(2),
+            })}
           </Typography>
 
           <Box sx={{ mt: 4, display: "flex", gap: 2 }}>
@@ -132,7 +139,7 @@ const EventBooking: React.FC = () => {
               variant="outlined"
               onClick={() => navigate(`/events/${id}`)}
             >
-              Back to Event
+              {t("eventBooking.backToEvent")}
             </Button>
             <Button
               variant="contained"
@@ -145,7 +152,7 @@ const EventBooking: React.FC = () => {
               {bookingLoading ? (
                 <CircularProgress size={24} />
               ) : (
-                "Confirm Booking"
+                t("eventBooking.confirmBooking")
               )}
             </Button>
           </Box>
@@ -161,16 +168,19 @@ const EventBooking: React.FC = () => {
         <DialogContent sx={{ textAlign: "center", py: 4 }}>
           <CheckCircleIcon color="success" sx={{ fontSize: 80, mb: 2 }} />
           <Typography variant="h4" gutterBottom>
-            Congratulations!
+            {t("common.success")}
           </Typography>
           <Typography variant="body1" paragraph>
-            Your booking for {currentEvent.name} has been confirmed.
+            {t("eventBooking.bookTicketsFor")}{" "}
+            {currentEvent.title || currentEvent.name} {t("bookings.confirmed")}
           </Typography>
           <Typography variant="body1" paragraph>
-            You have successfully booked {ticketCount} ticket(s).
+            {t("eventBooking.numberOfTickets")}: {ticketCount}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Total Amount: ${(currentEvent.price * ticketCount).toFixed(2)}
+            {t("eventBooking.total", {
+              total: (currentEvent.price * ticketCount).toFixed(2),
+            })}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
@@ -179,7 +189,7 @@ const EventBooking: React.FC = () => {
             color="primary"
             onClick={handleCloseCongrats}
           >
-            View My Bookings
+            {t("bookings.myBookings")}
           </Button>
         </DialogActions>
       </Dialog>

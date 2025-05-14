@@ -48,16 +48,6 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import api from "../../utils/axios";
 import { useTranslation } from "react-i18next";
 
-const CATEGORY_OPTIONS = [
-  "Music",
-  "Sports",
-  "Arts",
-  "Food",
-  "Business",
-  "Technology",
-  "Other",
-];
-
 interface Event {
   _id: string;
   title: string;
@@ -75,6 +65,17 @@ interface Event {
 
 const AdminEvents: React.FC = () => {
   const { t } = useTranslation();
+
+  const CATEGORY_OPTIONS = [
+    t("events.categories.Music"),
+    t("events.categories.Sports"),
+    t("events.categories.Arts"),
+    t("events.categories.Food"),
+    t("events.categories.Business"),
+    t("events.categories.Technology"),
+    t("events.categories.Other"),
+  ];
+
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -207,33 +208,36 @@ const AdminEvents: React.FC = () => {
     const errors: string[] = [];
 
     // Required fields validation
-    if (!form.title.trim()) errors.push("Title is required");
-    if (!form.description.trim()) errors.push("Description is required");
-    if (!form.date) errors.push("Date is required");
-    if (!form.location.trim()) errors.push("Location is required");
-    if (!form.price) errors.push("Price is required");
-    if (!form.category) errors.push("Category is required");
-    if (!form.capacity) errors.push("Capacity is required");
+    if (!form.title.trim()) errors.push(t("events.validation.titleRequired"));
+    if (!form.description.trim())
+      errors.push(t("events.validation.descriptionRequired"));
+    if (!form.date) errors.push(t("events.validation.dateRequired"));
+    if (!form.location.trim())
+      errors.push(t("events.validation.locationRequired"));
+    if (!form.price) errors.push(t("events.validation.priceRequired"));
+    if (!form.category) errors.push(t("events.validation.categoryRequired"));
+    if (!form.capacity) errors.push(t("events.validation.capacityRequired"));
     if (!form.availableTickets)
-      errors.push("Available tickets count is required");
+      errors.push(t("events.validation.ticketsRequired"));
 
     // Format and type validation
     if (form.title.trim().length < 3)
-      errors.push("Title must be at least 3 characters long");
+      errors.push(t("events.validation.titleLength"));
     if (form.description.trim().length < 10)
-      errors.push("Description must be at least 10 characters long");
-    if (Number(form.price) <= 0) errors.push("Price must be a positive number");
+      errors.push(t("events.validation.descriptionLength"));
+    if (Number(form.price) <= 0)
+      errors.push(t("events.validation.pricePositive"));
     if (!CATEGORY_OPTIONS.includes(form.category))
-      errors.push("Invalid category");
+      errors.push(t("events.validation.invalidCategory"));
     if (Math.floor(Number(form.capacity)) < 1)
-      errors.push("Capacity must be a positive integer");
+      errors.push(t("events.validation.capacityPositive"));
     if (Math.floor(Number(form.availableTickets)) < 0)
-      errors.push("Available tickets count must be a non-negative integer");
+      errors.push(t("events.validation.ticketsNonNegative"));
     if (
       Math.floor(Number(form.availableTickets)) >
       Math.floor(Number(form.capacity))
     ) {
-      errors.push("Available tickets cannot exceed capacity");
+      errors.push(t("events.validation.ticketsExceedCapacity"));
     }
 
     return errors;
@@ -478,7 +482,7 @@ const AdminEvents: React.FC = () => {
       setEvents((prev) => prev.filter((event) => event._id !== eventId));
       setSnackbar({
         open: true,
-        message: "Event deleted successfully!",
+        message: t("admin.success.eventDeleted"),
         severity: "success",
       });
     } catch (err: any) {
@@ -486,7 +490,7 @@ const AdminEvents: React.FC = () => {
       setError(err.response?.data?.message || "Failed to delete event");
       setSnackbar({
         open: true,
-        message: err.response?.data?.message || "Failed to delete event",
+        message: err.response?.data?.message || t("admin.error.deleteEvent"),
         severity: "error",
       });
     } finally {
@@ -736,16 +740,47 @@ const AdminEvents: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Image</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Capacity</TableCell>
-              <TableCell>Available</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", verticalAlign: "middle" }}
+              >
+                <Tooltip title={t("events.image")}>
+                  <ImageIcon fontSize="small" />
+                </Tooltip>
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("events.title")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("events.date")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("events.location")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("events.price")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("events.category")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("events.capacity")}
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", verticalAlign: "middle" }}
+              >
+                {t("events.available")}
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", verticalAlign: "middle" }}>
+                {t("events.status")}
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", verticalAlign: "middle" }}
+              >
+                {t("events.actions")}
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -769,7 +804,7 @@ const AdminEvents: React.FC = () => {
                 const imageUrl = event.imgUrl || event.image || "";
                 return (
                   <TableRow key={event._id} hover>
-                    <TableCell>
+                    <TableCell align="center">
                       {imageUrl ? (
                         <Box
                           component="img"
@@ -780,6 +815,7 @@ const AdminEvents: React.FC = () => {
                             height: 50,
                             objectFit: "cover",
                             borderRadius: 1,
+                            mx: "auto",
                           }}
                         />
                       ) : (
@@ -792,6 +828,7 @@ const AdminEvents: React.FC = () => {
                             justifyContent: "center",
                             bgcolor: "grey.100",
                             borderRadius: 1,
+                            mx: "auto",
                           }}
                         >
                           <ImageIcon color="disabled" />
@@ -817,9 +854,9 @@ const AdminEvents: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell>{event.capacity}</TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       <Chip
-                        label={`${event.availableTickets} left`}
+                        label={`left ${event.availableTickets}`}
                         size="small"
                         color={
                           event.availableTickets === 0
@@ -828,6 +865,7 @@ const AdminEvents: React.FC = () => {
                             ? "warning"
                             : "success"
                         }
+                        sx={{ fontWeight: "bold", px: 1.5 }}
                       />
                     </TableCell>
                     <TableCell>
@@ -841,11 +879,11 @@ const AdminEvents: React.FC = () => {
                         size="small"
                       />
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="center">
                       <Stack
                         direction="row"
                         spacing={1}
-                        justifyContent="flex-end"
+                        justifyContent="center"
                       >
                         <Tooltip title={t("admin.edit")}>
                           <IconButton

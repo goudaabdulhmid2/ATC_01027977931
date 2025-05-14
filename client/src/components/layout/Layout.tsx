@@ -34,7 +34,7 @@ import {
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, getCurrentUser } from "../../store/slices/authSlice";
-import { RootState } from "../../store";
+import { RootState, AppDispatch } from "../../store";
 import NotificationBell from "../notifications/NotificationBell";
 import { useTheme as useMuiTheme } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
@@ -64,7 +64,7 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { user, loading } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
   const [hasCheckedUser, setHasCheckedUser] = useState(false);
@@ -99,7 +99,6 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
   };
 
   const menuItems: MenuItem[] = [
-    { text: t("common.home"), icon: <HomeIcon />, path: "/" },
     { text: t("common.events"), icon: <EventIcon />, path: "/events" },
     {
       text: t("common.bookings"),
@@ -207,7 +206,7 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
             <ListItemIcon>
               <LogoutIcon />
             </ListItemIcon>
-            <ListItemText primary="Logout" />
+            <ListItemText primary={t("common.logout")} />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding component="div">
@@ -216,7 +215,9 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
               {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
             </ListItemIcon>
             <ListItemText
-              primary={mode === "dark" ? "Light Mode" : "Dark Mode"}
+              primary={
+                mode === "dark" ? t("common.lightMode") : t("common.darkMode")
+              }
             />
           </ListItemButton>
         </ListItem>
@@ -228,14 +229,14 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
                 size="small"
                 onClick={() => i18n.changeLanguage("en")}
               >
-                EN
+                {t("common.english")}
               </Button>
               <Button
                 variant={i18n.language === "ar" ? "contained" : "outlined"}
                 size="small"
                 onClick={() => i18n.changeLanguage("ar")}
               >
-                AR
+                {t("common.arabic")}
               </Button>
             </Stack>
           </Box>
@@ -265,7 +266,9 @@ const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {t("common.appName")}
+            {t(
+              user?.role === "admin" ? "common.appName" : "common.userAppName"
+            )}
           </Typography>
           {user?.role === "admin" && <NotificationBell />}
         </Toolbar>

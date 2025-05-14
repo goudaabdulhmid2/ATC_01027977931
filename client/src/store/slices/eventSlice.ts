@@ -2,9 +2,11 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import api from "../../utils/axios";
 import { addNotification } from "./notificationSlice";
+import { useTranslation } from "react-i18next";
 
 export interface Event {
   _id: string;
+  title?: string;
   name: string;
   description: string;
   date: string;
