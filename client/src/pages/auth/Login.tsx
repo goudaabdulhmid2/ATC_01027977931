@@ -48,17 +48,37 @@ const Login = () => {
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordConfirm, setpasswordConfirm] = useState("");
+  const [hasNavigated, setHasNavigated] = useState(false);
 
   const from = (location.state as any)?.from?.pathname || "/";
 
   useEffect(() => {
-    if (user) {
-      navigate(from);
+    if (user && !hasNavigated) {
+      setHasNavigated(true);
+      if (user.role === "admin") {
+        navigate("/admin/", { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     }
     return () => {
       dispatch(clearError());
     };
-  }, [user, navigate, from, dispatch]);
+  }, [user, navigate, from, dispatch, hasNavigated]);
+
+  useEffect(() => {
+    if (error) {
+      let message = error;
+      if (
+        message.toLowerCase().includes("invalid") ||
+        message.toLowerCase().includes("unauthorized") ||
+        message.toLowerCase().includes("401")
+      ) {
+        message = "Invalid email or password. Please try again.";
+      }
+      toast.error(message);
+    }
+  }, [error]);
 
   const formik = useFormik({
     initialValues: {

@@ -11,7 +11,10 @@ const User = require('../models/userModel');
 // @route  GET /api/v1/bookings
 // @access Private
 // @role   Admin
-exports.getAllBookings = handlerFactory.getAll(Booking);
+exports.getAllBookings = handlerFactory.getAll(Booking, [
+  { path: 'user', select: 'name email' },
+  { path: 'event', select: 'title' },
+]);
 
 // @desc   Get booking by ID
 // @route  GET /api/v1/bookings/:id
@@ -277,8 +280,11 @@ exports.bookEvent = catchAsync(async (req, res, next) => {
     }
 
     // Check if the user has already booked this event
-    const hasBooked = await Booking.hasUserBooked(eventId, req.user.id);
-    if (hasBooked) {
+    const hasBooked = await Booking.findOne({
+      event: eventId,
+      user: req.user.id,
+    });
+    if (hasBooked && hasBooked.status !== 'cancelled') {
       await session.abortTransaction();
       return next(new AppError('You have already booked this event', 400));
     }
@@ -290,7 +296,19 @@ exports.bookEvent = catchAsync(async (req, res, next) => {
     }
 
     // Check ticket availability
-    if (event.availableTickets < quantity) {
+    let quantityDiff = quantity;
+    if (hasBooked && hasBooked.status === 'cancelled') {
+      quantityDiff = quantity - hasBooked.quantity;
+      if (quantityDiff > 0 && event.availableTickets < quantityDiff) {
+        await session.abortTransaction();
+        return next(
+          new AppError(
+            'Not enough tickets available for the new quantity',
+            400,
+          ),
+        );
+      }
+    } else if (event.availableTickets < quantity) {
       await session.abortTransaction();
       return next(
         new AppError(
@@ -303,23 +321,33 @@ exports.bookEvent = catchAsync(async (req, res, next) => {
     // Calculate total price
     const totalPrice = event.price * quantity;
 
-    // Create booking
-    const booking = await Booking.create(
-      [
-        {
-          user: req.user.id,
-          event: eventId,
-          quantity,
-          totalPrice,
-          status: 'confirmed',
-          bookingDate: new Date(),
-        },
-      ],
-      { session },
-    );
-
-    // Update available tickets
-    event.availableTickets -= quantity;
+    let booking;
+    if (!hasBooked) {
+      // Create booking
+      booking = await Booking.create(
+        [
+          {
+            user: req.user.id,
+            event: eventId,
+            quantity,
+            totalPrice,
+            status: 'confirmed',
+            bookingDate: new Date(),
+          },
+        ],
+        { session },
+      );
+      booking = booking[0];
+      event.availableTickets -= quantity;
+    } else {
+      // Re-confirm a cancelled booking, possibly with a new quantity
+      hasBooked.status = 'confirmed';
+      hasBooked.quantity = quantity;
+      hasBooked.totalPrice = totalPrice;
+      await hasBooked.save({ session });
+      booking = hasBooked;
+      event.availableTickets -= quantityDiff;
+    }
     await event.save({ session });
 
     // Commit transaction
@@ -328,7 +356,7 @@ exports.bookEvent = catchAsync(async (req, res, next) => {
     res.status(201).json({
       status: 'success',
       data: {
-        booking: booking[0],
+        booking,
         message: `Successfully booked ${quantity} ticket(s) for ${event.title}`,
       },
     });

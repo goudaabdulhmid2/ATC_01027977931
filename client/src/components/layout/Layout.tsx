@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Outlet, NavLink, useLocation } from "react-router-dom";
 import {
   AppBar,
   Box,
@@ -15,6 +15,8 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
+  Avatar,
+  CircularProgress,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -24,10 +26,12 @@ import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   Logout as LogoutIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../store/slices/authSlice";
+import { logout, getCurrentUser } from "../../store/slices/authSlice";
 import { RootState } from "../../store";
+import NotificationBell from "../notifications/NotificationBell";
 
 const drawerWidth = 240;
 
@@ -37,13 +41,28 @@ interface MenuItem {
   path: string;
 }
 
+interface SidebarUser {
+  name?: string;
+  role?: string;
+  profileImage?: string;
+}
+
 const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user, loading } = useSelector((state: RootState) => state.auth);
+  const location = useLocation();
+  const [hasCheckedUser, setHasCheckedUser] = useState(false);
+
+  useEffect(() => {
+    if (!user && !hasCheckedUser) {
+      setHasCheckedUser(true);
+      dispatch(getCurrentUser());
+    }
+  }, [dispatch, user, hasCheckedUser]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -65,6 +84,7 @@ const Layout = () => {
     { text: "Home", icon: <HomeIcon />, path: "/" },
     { text: "Events", icon: <EventIcon />, path: "/events" },
     { text: "My Bookings", icon: <BookOnlineIcon />, path: "/my-bookings" },
+    { text: "Profile", icon: <PersonIcon />, path: "/profile" },
   ];
 
   const adminMenuItems: MenuItem[] = [
@@ -72,15 +92,75 @@ const Layout = () => {
     { text: "Events", icon: <EventIcon />, path: "/admin/events" },
     { text: "Bookings", icon: <BookOnlineIcon />, path: "/admin/bookings" },
     { text: "Users", icon: <PeopleIcon />, path: "/admin/users" },
+    { text: "Profile", icon: <PersonIcon />, path: "/profile" },
   ];
 
   const drawer = (
     <div>
       <Toolbar />
+      {loading ? (
+        <Box
+          sx={{
+            px: 2,
+            py: 2,
+            mb: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            bgcolor: "grey.100",
+            borderRadius: 1,
+          }}
+        >
+          <CircularProgress size={32} />
+        </Box>
+      ) : (
+        user && (
+          <Box
+            sx={{
+              px: 2,
+              py: 2,
+              mb: 1,
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              bgcolor: "grey.100",
+              borderRadius: 1,
+            }}
+          >
+            <Avatar
+              src={user.imgUrl || user.profileImage || undefined}
+              sx={{ width: 40, height: 40 }}
+            >
+              {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle2">
+                {user.name || "Unknown User"}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {user.role
+                  ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+                  : "Role"}
+              </Typography>
+            </Box>
+          </Box>
+        )
+      )}
       <List>
         {(user?.role === "admin" ? adminMenuItems : menuItems).map((item) => (
           <ListItem key={item.text} disablePadding component="div">
-            <ListItemButton onClick={() => handleNavigation(item.path)}>
+            <ListItemButton
+              component={NavLink}
+              to={item.path}
+              selected={location.pathname === item.path}
+              sx={{
+                "&.active": {
+                  bgcolor: "primary.main",
+                  color: "#fff",
+                  "& .MuiListItemIcon-root": { color: "#fff" },
+                },
+              }}
+            >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
@@ -118,9 +198,10 @@ const Layout = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Event Management System
           </Typography>
+          {user?.role === "admin" && <NotificationBell />}
         </Toolbar>
       </AppBar>
       <Box

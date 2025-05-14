@@ -88,7 +88,7 @@ eventSchema.index({
 eventSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'createdBy',
-    select: 'name',
+    select: 'name email',
   });
   next();
 });

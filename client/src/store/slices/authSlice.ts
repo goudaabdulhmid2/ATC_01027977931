@@ -1,17 +1,21 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import api from "../../utils/axios";
+import { addNotification } from "./notificationSlice";
 
 interface User {
   _id: string;
   name: string;
   email: string;
-  role: string;
+  role: "user" | "admin";
+  profileImage?: string;
+  imgUrl?: string;
 }
 
 interface AuthState {
   user: User | null;
   token: string | null;
+  isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
 }
@@ -19,6 +23,7 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   token: localStorage.getItem("token"),
+  isAuthenticated: !!localStorage.getItem("token"),
   loading: false,
   error: null,
 };
@@ -32,7 +37,10 @@ export const login = createAsyncThunk(
     try {
       const response = await api.post("/auth/login", credentials);
       localStorage.setItem("token", response.data.token);
-      return response.data;
+      return {
+        user: response.data.data.user,
+        token: response.data.token,
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
@@ -41,25 +49,16 @@ export const login = createAsyncThunk(
 
 export const register = createAsyncThunk(
   "auth/register",
-  async (
-    userData: {
-      name: string;
-      email: string;
-      password: string;
-      passwordConfirm: string;
-      phone?: string;
-    },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await api.post("/auth/signup", userData);
-      localStorage.setItem("token", response.data.token);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Registration failed"
-      );
-    }
+  async (userData: any, { dispatch }) => {
+    const response = await api.post("/auth/register", userData);
+    dispatch(
+      addNotification({
+        type: "success",
+        message: "New user registered",
+        link: `/admin/users/${response.data._id}`,
+      })
+    );
+    return response.data;
   }
 );
 
@@ -121,6 +120,57 @@ export const logout = createAsyncThunk(
   }
 );
 
+export const getCurrentUser = createAsyncThunk(
+  "auth/getCurrentUser",
+  async (_, { rejectWithValue }) => {
+    const token = localStorage.getItem("token");
+    if (!token) return rejectWithValue("No token");
+    try {
+      const response = await api.get("/users/me");
+      return response.data.data.data; // handlerFactory returns { data: { data: user } }
+    } catch (error: any) {
+      if (error.response && error.response.status === 401) {
+        localStorage.removeItem("token");
+      }
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch user"
+      );
+    }
+  }
+);
+
+export const updateUser = createAsyncThunk(
+  "auth/updateUser",
+  async (
+    { id, userData }: { id: string; userData: FormData },
+    { dispatch }
+  ) => {
+    const response = await api.put(`/users/${id}`, userData);
+    dispatch(
+      addNotification({
+        type: "info",
+        message: "User profile updated",
+        link: `/admin/users/${id}`,
+      })
+    );
+    return response.data;
+  }
+);
+
+export const deleteUser = createAsyncThunk(
+  "auth/deleteUser",
+  async (id: string, { dispatch }) => {
+    await api.delete(`/users/${id}`);
+    dispatch(
+      addNotification({
+        type: "warning",
+        message: "User deleted successfully",
+      })
+    );
+    return id;
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -138,8 +188,10 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.data.user;
+        state.user = action.payload.user;
         state.token = action.payload.token;
+        state.isAuthenticated = true;
+        localStorage.setItem("token", action.payload.token);
         toast.success("Login successful!");
       })
       .addCase(login.rejected, (state, action) => {
@@ -154,8 +206,10 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.data.user;
+        state.user = action.payload.user;
         state.token = action.payload.token;
+        state.isAuthenticated = true;
+        localStorage.setItem("token", action.payload.token);
         toast.success("Registration successful!");
       })
       .addCase(register.rejected, (state, action) => {
@@ -209,11 +263,22 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
         state.token = null;
+        state.isAuthenticated = false;
+        localStorage.removeItem("token");
         toast.success("Logged out successfully!");
       })
       .addCase(logout.rejected, (state, action) => {
         state.error = action.payload as string;
         toast.error(action.payload as string);
+      })
+      .addCase(getCurrentUser.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(getCurrentUser.rejected, (state, action) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.error = action.payload as string;
       });
   },
 });

@@ -15,6 +15,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { register, clearError } from "../../store/slices/authSlice";
 import { RootState, AppDispatch } from "../../store";
+import { toast } from "react-toastify";
 
 const validationSchema = Yup.object({
   name: Yup.string()
@@ -46,6 +47,20 @@ const Register = () => {
       dispatch(clearError());
     };
   }, [user, navigate, dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      let message = error;
+      if (
+        message.toLowerCase().includes("email") &&
+        message.toLowerCase().includes("exist")
+      ) {
+        message =
+          "This email is already registered. Please use another email or log in.";
+      }
+      toast.error(message);
+    }
+  }, [error]);
 
   const formik = useFormik({
     initialValues: {

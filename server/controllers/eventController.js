@@ -12,7 +12,7 @@ const AppError = require('../utils/AppError');
 // @desc Get all events
 // @route GET /api/v1/events
 // @access Public
-exports.getAllEvents = handlerFactory.getAll(Event, 'Event');
+exports.getAllEvents = handlerFactory.getAll(Event, '');
 
 // @desc Get event by id
 // @route GET /api/v1/events/:id

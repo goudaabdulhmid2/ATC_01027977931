@@ -2,6 +2,8 @@ const sharp = require('sharp');
 const catchAsync = require('express-async-handler');
 const uuid = require('uuid');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 
 const handlerFactory = require('./handlerFactory');
 const User = require('../models/userModel');
@@ -16,13 +18,19 @@ exports.uploadProfileImage = uploadSingleImage('profileImage');
 exports.resizeProfileImage = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
 
+  const usersDir = path.join(__dirname, '../public/img/users');
+  if (!fs.existsSync(usersDir)) {
+    fs.mkdirSync(usersDir, { recursive: true });
+  }
+
   req.file.filename = `user-${uuid.v4()}-${Date.now()}.jpeg`;
+  const filePath = path.join(usersDir, req.file.filename);
 
   await sharp(req.file.buffer)
     .resize(600, 600)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`uploads/users/${req.file.filename}`);
+    .toFile(filePath);
   req.body.profileImage = req.file.filename;
 
   next();
@@ -46,6 +54,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
       role: req.body.role,
       slug: req.body.slug,
       phone: req.body.phone,
+      active: req.body.active,
     },
     {
       new: true,
@@ -150,7 +159,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: {
-      user: sanitizeUser(updateUser),
+      user: updateUser,
     },
   });
 });

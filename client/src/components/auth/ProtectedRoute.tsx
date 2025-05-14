@@ -36,7 +36,7 @@ const ProtectedRoute = ({
 
   // Redirect to home if user doesn't have required role
   if (user && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/events" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

@@ -42,12 +42,6 @@ const bookingSchema = new mongoose.Schema(
 // Index for preventing duplicate bookings
 bookingSchema.index({ event: 1, user: 1 }, { unique: true });
 
-// Static method to check if user has already booked an event
-bookingSchema.statics.hasUserBooked = async function (eventId, userId) {
-  const booking = await this.findOne({ event: eventId, user: userId });
-  return !!booking;
-};
-
 // Pre-save middleware to ensure booking date is not in the past
 bookingSchema.pre('save', async function (next) {
   const event = await this.model('Event').findById(this.event);

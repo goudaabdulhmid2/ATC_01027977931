@@ -20,7 +20,7 @@ const app = express();
 // Enable other domains to access API
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://192.168.56.1:3001'],
-  methods: 'GET,POST,PUT,DELETE',
+  methods: 'GET,POST,PUT,DELETE,PATCH',
   credentials: true,
 };
 app.use(cors(corsOptions));
@@ -28,6 +28,9 @@ app.options('*', cors(corsOptions));
 
 // Serving static files from the /uploads directory
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve user images statically
+app.use('/users', express.static(path.join(__dirname, 'public/img/users')));
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));

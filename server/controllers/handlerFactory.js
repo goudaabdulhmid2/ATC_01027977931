@@ -23,18 +23,29 @@ exports.getOne = (Model, populationOpt = '') =>
     });
   });
 
-exports.getAll = (Model, modelName = '') =>
+exports.getAll = (Model, populationOpts = '') =>
   catchAsync(async (req, res, next) => {
     let filter = {};
     if (req.filterObj) filter = { ...req.filterObj };
 
     const docsCount = await Model.countDocuments();
-    const features = new AppFeatures(Model.find(filter), req.query)
+    let queryBuilder = Model.find(filter);
+    if (populationOpts) {
+      if (Array.isArray(populationOpts)) {
+        populationOpts.forEach((opt) => {
+          queryBuilder = queryBuilder.populate(opt);
+        });
+      } else {
+        queryBuilder = queryBuilder.populate(populationOpts);
+      }
+    }
+
+    const features = new AppFeatures(queryBuilder, req.query)
       .filter()
       .sort()
       .limitFields()
       .paginate(docsCount)
-      .keyWordsSearch(modelName);
+      .keyWordsSearch(populationOpts);
 
     const { query, paginationResults } = features;
     const docs = await query;
