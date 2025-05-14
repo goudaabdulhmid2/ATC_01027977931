@@ -33,7 +33,7 @@ import AdminBookings from "./pages/admin/AdminBookings";
 import UserProfile from "./pages/profile/UserProfile";
 
 // Theme
-import theme from "./theme";
+import { lightTheme, darkTheme } from "./theme";
 
 // Protected Route
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -42,6 +42,17 @@ import NavBar from "./components/NavBar";
 const App = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [hasCheckedUser, setHasCheckedUser] = useState(false);
+  const [mode, setMode] = useState(
+    () => localStorage.getItem("themeMode") || "light"
+  );
+
+  const toggleMode = () => {
+    setMode((prev) => {
+      const next = prev === "light" ? "dark" : "light";
+      localStorage.setItem("themeMode", next);
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!hasCheckedUser) {
@@ -51,10 +62,10 @@ const App = () => {
   }, [dispatch, hasCheckedUser]);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={mode === "dark" ? darkTheme : lightTheme}>
       <GlobalLoader />
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <NavBar />
+        <NavBar mode={mode} toggleMode={toggleMode} />
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
@@ -69,7 +80,7 @@ const App = () => {
           <Route
             element={
               <ProtectedRoute>
-                <Layout />
+                <Layout mode={mode} toggleMode={toggleMode} />
               </ProtectedRoute>
             }
           >
@@ -119,7 +130,7 @@ const App = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="light"
+        theme={mode}
       />
     </ThemeProvider>
   );

@@ -124,7 +124,9 @@ export const getCurrentUser = createAsyncThunk(
   "auth/getCurrentUser",
   async (_, { rejectWithValue }) => {
     const token = localStorage.getItem("token");
-    if (!token) return rejectWithValue("No token");
+    if (!token) {
+      return null;
+    }
     try {
       const response = await api.get("/users/me");
       return response.data.data.data; // handlerFactory returns { data: { data: user } }

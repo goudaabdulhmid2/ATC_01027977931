@@ -12,8 +12,15 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../store";
 import { logout } from "../store/slices/authSlice";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
 
-const NavBar: React.FC = () => {
+interface NavBarProps {
+  mode: string;
+  toggleMode: () => void;
+}
+
+const NavBar: React.FC<NavBarProps> = ({ mode, toggleMode }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -60,6 +67,16 @@ const NavBar: React.FC = () => {
           )}
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <IconButton onClick={toggleMode} color="inherit">
+            {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
+          <Typography
+            variant="body2"
+            sx={{ cursor: "pointer" }}
+            onClick={toggleMode}
+          >
+            {mode === "dark" ? "Light Mode" : "Dark Mode"}
+          </Typography>
           {!user ? (
             <>
               <Button

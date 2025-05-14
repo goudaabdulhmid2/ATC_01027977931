@@ -27,11 +27,14 @@ import {
   People as PeopleIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
+  Brightness4 as Brightness4Icon,
+  Brightness7 as Brightness7Icon,
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, getCurrentUser } from "../../store/slices/authSlice";
 import { RootState } from "../../store";
 import NotificationBell from "../notifications/NotificationBell";
+import { useTheme as useMuiTheme } from "@mui/material/styles";
 
 const drawerWidth = 240;
 
@@ -47,8 +50,14 @@ interface SidebarUser {
   profileImage?: string;
 }
 
-const Layout = () => {
+interface LayoutProps {
+  mode: string;
+  toggleMode: () => void;
+}
+
+const Layout: React.FC<LayoutProps> = ({ mode, toggleMode }) => {
   const theme = useTheme();
+  const muiTheme = useMuiTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
@@ -125,6 +134,9 @@ const Layout = () => {
               gap: 2,
               bgcolor: "grey.100",
               borderRadius: 1,
+              ...(muiTheme.palette.mode === "dark" && {
+                bgcolor: "#23272f",
+              }),
             }}
           >
             <Avatar
@@ -134,10 +146,16 @@ const Layout = () => {
               {user.name ? user.name.charAt(0).toUpperCase() : "U"}
             </Avatar>
             <Box>
-              <Typography variant="subtitle2">
+              <Typography
+                variant="subtitle2"
+                sx={{ color: muiTheme.palette.text.primary }}
+              >
                 {user.name || "Unknown User"}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{ color: muiTheme.palette.text.secondary }}
+              >
                 {user.role
                   ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
                   : "Role"}
@@ -172,6 +190,16 @@ const Layout = () => {
               <LogoutIcon />
             </ListItemIcon>
             <ListItemText primary="Logout" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding component="div">
+          <ListItemButton onClick={toggleMode}>
+            <ListItemIcon>
+              {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
+            </ListItemIcon>
+            <ListItemText
+              primary={mode === "dark" ? "Light Mode" : "Dark Mode"}
+            />
           </ListItemButton>
         </ListItem>
       </List>
