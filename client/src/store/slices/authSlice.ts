@@ -50,15 +50,20 @@ export const login = createAsyncThunk(
 export const register = createAsyncThunk(
   "auth/register",
   async (userData: any, { dispatch }) => {
-    const response = await api.post("/auth/register", userData);
+    const response = await api.post("/auth/signup", userData);
+    localStorage.setItem("token", response.data.token);
     dispatch(
       addNotification({
         type: "success",
-        message: "New user registered",
-        link: `/admin/users/${response.data._id}`,
+        message: "Registration successful! Redirecting...",
+        link: "/dashboard",
       })
     );
-    return response.data;
+    window.location.href = "/dashboard";
+    return {
+      user: response.data.data.user,
+      token: response.data.token,
+    };
   }
 );
 
