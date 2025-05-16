@@ -1,6 +1,6 @@
 # Eventify Backend
 
-A robust Node.js/Express backend for the Eventify event management system, featuring comprehensive security measures, caching, and RESTful APIs.
+A robust Node.js/Express backend for the Eventify event management system, featuring comprehensive security measures, and RESTful APIs.
 
 ## Project Overview
 
@@ -47,7 +47,7 @@ Eventify is a full-stack event booking system that enables users to browse and b
 
 ## Technical Features
 
-## Deployment
+### Deployment
 
 - Deployment to Railway
 
@@ -58,14 +58,11 @@ Eventify is a full-stack event booking system that enables users to browse and b
 - NoSQL injection prevention
 - Request rate limiting
 - Cookie parsing and security
-- CSRF protection
-- HTTP Parameter Pollution protection
 - Request size limiting
 
 ### Database & Caching
 
 - MongoDB with Mongoose ODM
-- Redis caching for improved performance
 - Database connection error handling
 
 ### API Architecture
@@ -81,7 +78,6 @@ Eventify is a full-stack event booking system that enables users to browse and b
 
 - Node.js (v14 or higher)
 - MongoDB
-- Redis
 
 ## Installation
 
@@ -95,6 +91,7 @@ Eventify is a full-stack event booking system that enables users to browse and b
    ```env
    NODE_ENV=development
    PORT=3000
+   BASE_URL=your_base_url
    DATABASE=your_mongodb_connection_string
    DATABASE_PASSWORD=your_database_password
 
@@ -102,16 +99,13 @@ Eventify is a full-stack event booking system that enables users to browse and b
    JWT_EXPIRES_IN=90d
    JWT_COOKIE_EXPIRES_IN=90
 
-   REDIS_HOST=your_redis_host
-   REDIS_PORT=your_redis_port
-   REDIS_PASSWORD=your_redis_password
-
-   EMAIL_USERNAME=your_email_username
+   EMAIL_USER=your_email_username
    EMAIL_PASSWORD=your_email_password
    EMAIL_HOST=your_email_host
    EMAIL_PORT=your_email_port
+   EMAIL_FROM=your_email_from
 
-   FRONTEND_URL=http://localhost:5173
+   FRONTEND_URL=your_frontend_url
    ```
 
 ## API Documentation
@@ -173,14 +167,13 @@ The API is organized around REST principles. All requests should be made to endp
 
 #### Admin User Management
 
-| Method | Endpoint                                 | Description          | Authentication |
-| ------ | ---------------------------------------- | -------------------- | -------------- |
-| GET    | `/api/v1/admin/users`                    | List all users       | Admin          |
-| GET    | `/api/v1/admin/users/:id`                | Get user details     | Admin          |
-| POST   | `/api/v1/admin/users`                    | Create user          | Admin          |
-| PATCH  | `/api/v1/admin/users/:id`                | Update user          | Admin          |
-| DELETE | `/api/v1/admin/users/:id`                | Delete user          | Admin          |
-| PATCH  | `/api/v1/admin/users/changePassword/:id` | Change user password | Admin          |
+| Method | Endpoint                  | Description      | Authentication |
+| ------ | ------------------------- | ---------------- | -------------- |
+| GET    | `/api/v1/admin/users`     | List all users   | Admin          |
+| GET    | `/api/v1/admin/users/:id` | Get user details | Admin          |
+| POST   | `/api/v1/admin/users`     | Create user      | Admin          |
+| PATCH  | `/api/v1/admin/users/:id` | Update user      | Admin          |
+| DELETE | `/api/v1/admin/users/:id` | Delete user      | Admin          |
 
 #### Admin Booking Management
 
