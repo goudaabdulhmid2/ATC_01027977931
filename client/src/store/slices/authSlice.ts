@@ -52,14 +52,18 @@ export const register = createAsyncThunk(
   async (userData: any, { dispatch }) => {
     const response = await api.post("/auth/signup", userData);
     localStorage.setItem("token", response.data.token);
+    const redirectPath =
+      response.data.data.user.role === "admin" ? "/dashboard" : "/events";
     dispatch(
       addNotification({
         type: "success",
-        message: "Registration successful! Redirecting...",
-        link: "/dashboard",
+        message: `Registration successful! Redirecting to ${redirectPath.substring(
+          1
+        )}...`,
+        link: redirectPath,
       })
     );
-    window.location.href = "/dashboard";
+    window.location.href = redirectPath;
     return {
       user: response.data.data.user,
       token: response.data.token,
