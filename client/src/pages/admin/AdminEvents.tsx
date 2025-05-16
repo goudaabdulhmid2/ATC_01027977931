@@ -968,15 +968,9 @@ const AdminEvents: React.FC = () => {
               value={form.title}
               onChange={handleFormChange}
               error={Boolean(
-                validateForm().find((err) => err.includes("title")) ||
-                  createError ||
-                  editError
+                validateForm().find((err) => err.includes("title"))
               )}
-              helperText={
-                validateForm().find((err) => err.includes("title")) ||
-                createError ||
-                editError
-              }
+              helperText={validateForm().find((err) => err.includes("title"))}
             />
             <TextField
               fullWidth
@@ -1048,7 +1042,12 @@ const AdminEvents: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+                <FormControl
+                  fullWidth
+                  error={Boolean(
+                    validateForm().find((err) => err.includes("category"))
+                  )}
+                >
                   <InputLabel>{t("events.category")}</InputLabel>
                   <Select
                     name="category"
