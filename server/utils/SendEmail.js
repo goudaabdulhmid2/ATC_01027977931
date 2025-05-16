@@ -53,6 +53,6 @@ module.exports = class Email {
 
   async sendWelcome() {
     const message = `Hi ${this.firstname},\n Welcome to the Family!\nYou’ve successfully registered, and your journey with us has just begun.\nEnjoy your journey with us!\n`;
-    await this.send(message, 'Welcome to the البيت السعيد  Family!');
+    await this.send(message, 'Welcome to the eventify Family!');
   }
 };
