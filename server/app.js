@@ -47,11 +47,15 @@ app.use(cookieParser());
 // Compress all response
 app.use(compression());
 
-// Trust proxy for Railway deployment
-app.set('trust proxy', true);
+// Trust proxy for Railway deployment - only trust Railway's proxy
+app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 
 // General rate limiter for API routes
 const limiter = rateLimit({
+  validate: {
+    trustProxy: false, // Disable the trust proxy validation since we configured it at app level
+    xForwardedForHeader: false, // Disable X-Forwarded-For validation since we're behind Railway's proxy
+  },
   window: 15 * 60 * 1000,
   max: 100,
   message: 'Too many requests from this IP, please try again in an 15 minutes!',
