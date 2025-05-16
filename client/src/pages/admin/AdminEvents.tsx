@@ -205,39 +205,46 @@ const AdminEvents: React.FC = () => {
   };
 
   const validateForm = (isEdit: boolean = false) => {
-    const errors: string[] = [];
+    const errors: { [key: string]: string } = {};
 
     // Required fields validation
-    if (!form.title.trim()) errors.push(t("events.validation.titleRequired"));
-    if (!form.description.trim())
-      errors.push(t("events.validation.descriptionRequired"));
-    if (!form.date) errors.push(t("events.validation.dateRequired"));
-    if (!form.location.trim())
-      errors.push(t("events.validation.locationRequired"));
-    if (!form.price) errors.push(t("events.validation.priceRequired"));
-    if (!form.category) errors.push(t("events.validation.categoryRequired"));
-    if (!form.capacity) errors.push(t("events.validation.capacityRequired"));
-    if (!form.availableTickets)
-      errors.push(t("events.validation.ticketsRequired"));
+    if (!form.title.trim()) errors.title = t("events.validation.titleRequired");
+    else if (form.title.trim().length < 3)
+      errors.title = t("events.validation.titleLength");
 
-    // Format and type validation
-    if (form.title.trim().length < 3)
-      errors.push(t("events.validation.titleLength"));
-    if (form.description.trim().length < 10)
-      errors.push(t("events.validation.descriptionLength"));
-    if (Number(form.price) <= 0)
-      errors.push(t("events.validation.pricePositive"));
-    if (!CATEGORY_OPTIONS.includes(form.category))
-      errors.push(t("events.validation.invalidCategory"));
-    if (Math.floor(Number(form.capacity)) < 1)
-      errors.push(t("events.validation.capacityPositive"));
-    if (Math.floor(Number(form.availableTickets)) < 0)
-      errors.push(t("events.validation.ticketsNonNegative"));
-    if (
+    if (!form.description.trim())
+      errors.description = t("events.validation.descriptionRequired");
+    else if (form.description.trim().length < 10)
+      errors.description = t("events.validation.descriptionLength");
+
+    if (!form.date) errors.date = t("events.validation.dateRequired");
+
+    if (!form.location.trim())
+      errors.location = t("events.validation.locationRequired");
+
+    if (!form.price) errors.price = t("events.validation.priceRequired");
+    else if (Number(form.price) <= 0)
+      errors.price = t("events.validation.pricePositive");
+
+    if (!form.category)
+      errors.category = t("events.validation.categoryRequired");
+    else if (!CATEGORY_OPTIONS.includes(form.category))
+      errors.category = t("events.validation.invalidCategory");
+
+    if (!form.capacity)
+      errors.capacity = t("events.validation.capacityRequired");
+    else if (Math.floor(Number(form.capacity)) < 1)
+      errors.capacity = t("events.validation.capacityPositive");
+
+    if (!form.availableTickets)
+      errors.availableTickets = t("events.validation.ticketsRequired");
+    else if (Math.floor(Number(form.availableTickets)) < 0)
+      errors.availableTickets = t("events.validation.ticketsNonNegative");
+    else if (
       Math.floor(Number(form.availableTickets)) >
       Math.floor(Number(form.capacity))
     ) {
-      errors.push(t("events.validation.ticketsExceedCapacity"));
+      errors.availableTickets = t("events.validation.ticketsExceedCapacity");
     }
 
     return errors;
@@ -246,8 +253,8 @@ const AdminEvents: React.FC = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors = validateForm();
-    if (errors.length > 0) {
-      setCreateError(errors[0]);
+    if (Object.keys(errors).length > 0) {
+      setCreateError(Object.values(errors)[0]);
       return;
     }
     setCreateLoading(true);
@@ -967,10 +974,8 @@ const AdminEvents: React.FC = () => {
               name="title"
               value={form.title}
               onChange={handleFormChange}
-              error={Boolean(
-                validateForm().find((err) => err.includes("title"))
-              )}
-              helperText={validateForm().find((err) => err.includes("title"))}
+              error={Boolean(validateForm().title)}
+              helperText={validateForm().title}
             />
             <TextField
               fullWidth
@@ -978,12 +983,8 @@ const AdminEvents: React.FC = () => {
               name="description"
               value={form.description}
               onChange={handleFormChange}
-              error={Boolean(
-                validateForm().find((err) => err.includes("description"))
-              )}
-              helperText={validateForm().find((err) =>
-                err.includes("description")
-              )}
+              error={Boolean(validateForm().description)}
+              helperText={validateForm().description}
               multiline
               rows={4}
             />
@@ -1011,12 +1012,8 @@ const AdminEvents: React.FC = () => {
                   label={t("events.location")}
                   name="location"
                   value={form.location}
-                  error={Boolean(
-                    validateForm().find((err) => err.includes("location"))
-                  )}
-                  helperText={validateForm().find((err) =>
-                    err.includes("location")
-                  )}
+                  error={Boolean(validateForm().location)}
+                  helperText={validateForm().location}
                   onChange={handleFormChange}
                 />
               </Grid>
@@ -1030,24 +1027,15 @@ const AdminEvents: React.FC = () => {
                   type="number"
                   value={form.price}
                   onChange={handleFormChange}
-                  error={Boolean(
-                    validateForm().find((err) => err.includes("price"))
-                  )}
-                  helperText={validateForm().find((err) =>
-                    err.includes("price")
-                  )}
+                  error={Boolean(validateForm().price)}
+                  helperText={validateForm().price}
                   InputProps={{
                     startAdornment: "$",
                   }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormControl
-                  fullWidth
-                  error={Boolean(
-                    validateForm().find((err) => err.includes("category"))
-                  )}
-                >
+                <FormControl fullWidth error={Boolean(validateForm().category)}>
                   <InputLabel>{t("events.category")}</InputLabel>
                   <Select
                     name="category"
@@ -1076,12 +1064,8 @@ const AdminEvents: React.FC = () => {
                   type="number"
                   value={form.capacity}
                   onChange={handleFormChange}
-                  error={Boolean(
-                    validateForm().find((err) => err.includes("capacity"))
-                  )}
-                  helperText={validateForm().find((err) =>
-                    err.includes("capacity")
-                  )}
+                  error={Boolean(validateForm().capacity)}
+                  helperText={validateForm().capacity}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -1092,12 +1076,8 @@ const AdminEvents: React.FC = () => {
                   type="number"
                   value={form.availableTickets}
                   onChange={handleFormChange}
-                  error={Boolean(
-                    validateForm().find((err) => err.includes("tickets"))
-                  )}
-                  helperText={validateForm().find((err) =>
-                    err.includes("tickets")
-                  )}
+                  error={Boolean(validateForm().availableTickets)}
+                  helperText={validateForm().availableTickets}
                 />
               </Grid>
             </Grid>
