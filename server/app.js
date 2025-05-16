@@ -21,11 +21,26 @@ const app = express();
 const corsOptions = {
   origin:
     process.env.NODE_ENV === 'production'
-      ? [process.env.FRONTEND_URL]
+      ? [
+          process.env.FRONTEND_URL,
+          'https://atc01027977931-production.up.railway.app',
+        ]
       : ['http://localhost:5173', 'http://192.168.56.1:3001'],
-  methods: 'GET,POST,PUT,DELETE,PATCH',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true,
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+  ],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400, // 24 hours in seconds
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 };
+
+// Apply CORS middleware
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 

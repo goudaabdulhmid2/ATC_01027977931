@@ -245,6 +245,11 @@ const AdminEvents: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errors = validateForm();
+    if (errors.length > 0) {
+      setCreateError(errors[0]);
+      return;
+    }
     setCreateLoading(true);
     setCreateError(null);
 
@@ -962,8 +967,16 @@ const AdminEvents: React.FC = () => {
               name="title"
               value={form.title}
               onChange={handleFormChange}
-              error={Boolean(createError || editError)}
-              helperText={createError || editError}
+              error={Boolean(
+                validateForm().find((err) => err.includes("title")) ||
+                  createError ||
+                  editError
+              )}
+              helperText={
+                validateForm().find((err) => err.includes("title")) ||
+                createError ||
+                editError
+              }
             />
             <TextField
               fullWidth
@@ -971,6 +984,12 @@ const AdminEvents: React.FC = () => {
               name="description"
               value={form.description}
               onChange={handleFormChange}
+              error={Boolean(
+                validateForm().find((err) => err.includes("description"))
+              )}
+              helperText={validateForm().find((err) =>
+                err.includes("description")
+              )}
               multiline
               rows={4}
             />
@@ -998,6 +1017,12 @@ const AdminEvents: React.FC = () => {
                   label={t("events.location")}
                   name="location"
                   value={form.location}
+                  error={Boolean(
+                    validateForm().find((err) => err.includes("location"))
+                  )}
+                  helperText={validateForm().find((err) =>
+                    err.includes("location")
+                  )}
                   onChange={handleFormChange}
                 />
               </Grid>
@@ -1011,8 +1036,14 @@ const AdminEvents: React.FC = () => {
                   type="number"
                   value={form.price}
                   onChange={handleFormChange}
+                  error={Boolean(
+                    validateForm().find((err) => err.includes("price"))
+                  )}
+                  helperText={validateForm().find((err) =>
+                    err.includes("price")
+                  )}
                   InputProps={{
-                    startAdornment: <Typography>$</Typography>,
+                    startAdornment: "$",
                   }}
                 />
               </Grid>
@@ -1046,6 +1077,12 @@ const AdminEvents: React.FC = () => {
                   type="number"
                   value={form.capacity}
                   onChange={handleFormChange}
+                  error={Boolean(
+                    validateForm().find((err) => err.includes("capacity"))
+                  )}
+                  helperText={validateForm().find((err) =>
+                    err.includes("capacity")
+                  )}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -1056,6 +1093,12 @@ const AdminEvents: React.FC = () => {
                   type="number"
                   value={form.availableTickets}
                   onChange={handleFormChange}
+                  error={Boolean(
+                    validateForm().find((err) => err.includes("tickets"))
+                  )}
+                  helperText={validateForm().find((err) =>
+                    err.includes("tickets")
+                  )}
                 />
               </Grid>
             </Grid>
