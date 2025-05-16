@@ -268,6 +268,7 @@
     "bookingUpdatedDetails": "Booking for {{event}} has been updated to {{count}} ticket(s)."
   },
   "admin": {
+    "save": "Save",
     "dashboard": "Dashboard",
     "overview": "Overview",
     "events": "Events",

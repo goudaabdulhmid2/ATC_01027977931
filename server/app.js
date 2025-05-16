@@ -47,6 +47,9 @@ app.use(cookieParser());
 // Compress all response
 app.use(compression());
 
+// Trust proxy for Railway deployment
+app.set('trust proxy', true);
+
 // General rate limiter for API routes
 const limiter = rateLimit({
   window: 15 * 60 * 1000,

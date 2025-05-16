@@ -3,7 +3,7 @@ import { store } from "../store";
 import { setLoading } from "../store/slices/loaderSlice";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api/v1", // Changed to absolute URL
+  baseURL: import.meta.env.VITE_REACT_APP_BACKEND_URL + "/api/v1", // Using environment variable for backend URL
   headers: {
     "Content-Type": "application/json",
   },
