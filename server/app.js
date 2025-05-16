@@ -19,7 +19,10 @@ const app = express();
 
 // Enable other domains to access API
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://192.168.56.1:3001'],
+  origin:
+    process.env.NODE_ENV === 'production'
+      ? [process.env.FRONTEND_UR]
+      : ['http://localhost:5173', 'http://192.168.56.1:3001'],
   methods: 'GET,POST,PUT,DELETE,PATCH',
   credentials: true,
 };
