@@ -6,7 +6,7 @@ const path = require('path');
 
 const handlerFactory = require('./handlerFactory');
 const Event = require('../models/eventModel');
-const uploadimageController = require('./uploadimageController');
+const uploadimageController = require('./uploadImageController');
 const AppError = require('../utils/AppError');
 
 // @desc Get all events

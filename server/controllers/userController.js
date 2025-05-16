@@ -7,7 +7,7 @@ const path = require('path');
 
 const handlerFactory = require('./handlerFactory');
 const User = require('../models/userModel');
-const { uploadSingleImage } = require('./uploadimageController');
+const { uploadSingleImage } = require('./uploadImageController');
 const AppError = require('../utils/AppError');
 const createSendToken = require('../utils/createToken');
 const { sanitizeUser } = require('../utils/senitizeData');
