@@ -21,7 +21,7 @@ const app = express();
 const corsOptions = {
   origin:
     process.env.NODE_ENV === 'production'
-      ? [process.env.FRONTEND_UR]
+      ? [process.env.FRONTEND_URL]
       : ['http://localhost:5173', 'http://192.168.56.1:3001'],
   methods: 'GET,POST,PUT,DELETE,PATCH',
   credentials: true,
